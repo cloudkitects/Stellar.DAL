@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
@@ -636,29 +638,27 @@ namespace Stellar.DAL
                     break;
             }
 
-            var type = item.GetType();
-
             // get schema & table from object attribute
-            table ??= BuildEntityName(type, prefix, suffix);
+            table ??= BuildEntityName(item, prefix, suffix);
 
             var columns = new StringBuilder();
             var values = new StringBuilder();
 
             var namesAndValues = TypeCache.GetMetadataAndValues(item);
 
-            foreach (var namesAndValue in namesAndValues)
+            foreach (var (key, value) in namesAndValues)
             {
-                if (namesAndValue.Value == null)
+                if (value == null)
                 {
                     continue;
                 }
 
-                var name = $"@{namesAndValue.Key}_p{command.Parameters.Count}";
+                var name = $"@{key}_p{command.Parameters.Count}";
 
-                columns.Append($"{prefix}{namesAndValue.Key}{suffix},");
+                columns.Append($"{prefix}{key}{suffix},");
                 values.Append($"{name},");
 
-                command.AddParameter(name, namesAndValue.Value);
+                command.AddParameter(name, value);
             }
 
             command.AppendCommandText(string.Format(template,
@@ -862,17 +862,29 @@ namespace Stellar.DAL
                     (current, parameter) => Regex.Replace(current, $"{parameter.ParameterName}", $"/*{parameter.ParameterName}=*/'{parameter.Value}'"));
         }
 
-        internal static string BuildEntityName(Type type, string prefix, string suffix)
+        /// <summary>
+        /// Build a conforming entity name from the entity attribute or the type name.
+        /// </summary>
+        /// <param name="obj">The object to build a data service name for.</param>
+        /// <param name="prefix">The data service compliant name prefix.</param>
+        /// <param name="suffix">The data service compliant name suffix.</param>
+        /// <returns>A one-part or two-part data service complaint name for an entity
+        /// as defined byt the attribute or the type.</returns>
+        /// <remarks>Best used as a fallback when the entity name is not explicitly defined.
+        /// </remarks>
+        internal static string BuildEntityName(object obj, string prefix, string suffix)
         {
-            DALEntityAttribute attribute;
+            var type = obj.GetType();
 
-            if (!Attribute.IsDefined(type, typeof(DALEntityAttribute)) || (attribute = (DALEntityAttribute)Attribute.GetCustomAttribute(type, typeof(DALEntityAttribute))) == null)
+            var attribute = (EntityAttribute)TypeDescriptor.GetAttributes(obj)[typeof(EntityAttribute)];
+
+            if (attribute == null && (!Attribute.IsDefined(type, typeof(EntityAttribute)) || (attribute = (EntityAttribute)Attribute.GetCustomAttribute(type, typeof(EntityAttribute))) == null))
             {
                 return $"{prefix}{type.Name}{suffix}";
             }
 
             var schema = string.IsNullOrWhiteSpace(attribute.Schema)
-                ? ""
+                ? string.Empty
                 : $"{prefix}{attribute.Schema}{suffix}.";
             
             return $"{schema}{prefix}{attribute.Table ?? type.Name}{suffix}";

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
+using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
@@ -82,4 +83,5 @@ namespace Stellar.DAL.Tests
 
             Assert.That(obj.Customer.FirstName == "Clark");
         }
-    }}
+    }
+}

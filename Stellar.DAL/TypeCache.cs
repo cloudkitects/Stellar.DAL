@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
+using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
@@ -30,7 +31,7 @@ namespace Stellar.DAL
 
             foreach (var propertyInfo in properties)
             {
-                if (Attribute.IsDefined(propertyInfo, typeof(DALIgnoreAttribute)))
+                if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
                 {
                     continue;
                 }
@@ -42,7 +43,7 @@ namespace Stellar.DAL
 
             foreach (var fieldInfo in fields)
             {
-                if (Attribute.IsDefined(fieldInfo, typeof(DALIgnoreAttribute)))
+                if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
                 {
                     continue;
                 }

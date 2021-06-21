@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
+using Stellar.DAL.Model;
 
 namespace Stellar.DAL.Tests.Data
 {
@@ -71,6 +72,7 @@ namespace Stellar.DAL.Tests.Data
     /// <summary>
     /// Person entity.
     /// </summary>
+    [Entity("", "Person")]
     public class Person : Entity
     {
         public long? PersonId { get; set; }
@@ -81,10 +83,10 @@ namespace Stellar.DAL.Tests.Data
         public byte[] PasswordSalt { get; }
         public byte[] PasswordHash { get; }
         
-        [DALIgnore]
+        [Ignore]
         public Address Address { get; set; }
         
-        [DALIgnore]
+        [Ignore]
         public IEnumerable<string> Traits { get; set; }
 
         public Person()

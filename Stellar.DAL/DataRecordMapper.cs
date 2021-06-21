@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Reflection;
+using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
@@ -51,7 +52,7 @@ namespace Stellar.DAL
                         continue;
                     case PropertyInfo propertyInfo:
                     {
-                        if (Attribute.IsDefined(propertyInfo, typeof(DALIgnoreAttribute)))
+                        if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
                         {
                             continue;
                         }
@@ -76,7 +77,7 @@ namespace Stellar.DAL
                     }
                     case FieldInfo fieldInfo:
                     {
-                        if (Attribute.IsDefined(fieldInfo, typeof(DALIgnoreAttribute)))
+                        if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
                         {
                             continue;
                         }

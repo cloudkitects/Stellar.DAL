@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
@@ -133,19 +135,32 @@ namespace Stellar.DAL
             return new(TypeCache.GetMetadataAndValues(obj));
         }
 
+        public static void TransferEntityAttribute(Type type, DynamicDictionary dictionary)
+        {
+            EntityAttribute attribute;
+
+            if (Attribute.IsDefined(type, typeof(EntityAttribute)) && (attribute = (EntityAttribute)Attribute.GetCustomAttribute(type, typeof(EntityAttribute))) != null)
+            {
+                TypeDescriptor.AddAttributes(dictionary, attribute);
+            }
+        }
+
         /// <summary>
         /// Extend a dynamic dictionary with the given key-value pair.
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// </remarks>
         public static DynamicDictionary ExtendWith(this object obj, string key, object value)
         {
             var dictionary = ToDynamicDictionary(obj);
 
             dictionary.Add(key, value);
 
+            TransferEntityAttribute(obj.GetType(), dictionary);
+            
             return dictionary;
         }
 
@@ -157,14 +172,16 @@ namespace Stellar.DAL
         /// <returns></returns>
         public static DynamicDictionary ExtendWith(this object obj, IDictionary<string, object> properties)
         {
-            var instance = ToDynamicDictionary(obj);
+            var dictionary = ToDynamicDictionary(obj);
 
-            foreach (var property in properties)
+            foreach (var (key, value) in properties)
             {
-                instance.Add(property.Key, property.Value);
+                dictionary.Add(key, value);
             }
 
-            return instance;
+            TransferEntityAttribute(obj.GetType(), dictionary);
+
+            return dictionary;
         }
         #endregion
 

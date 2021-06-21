@@ -7,7 +7,7 @@ using System.Linq;
 using System.Transactions;
 
 using NUnit.Framework;
-
+using Stellar.DAL.Model;
 using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
@@ -211,28 +211,11 @@ namespace Stellar.DAL.Tests
         {
             var addressId = SavedId(person.Address);
 
-            var entity = person
-                .ExtendWith("AddressId", addressId);
-
-            var rowsAffected = Save(entity, "Person");
+            var rowsAffected = Save(person
+                .ExtendWith("AddressId", addressId));
 
             Assert.That(rowsAffected > 0);
         }
-
-        [Test]
-        public void SaveModel3()
-        {
-            var person = Seed.Superman;
-
-            person.Email = "we.are@the.world";
-
-            var command = GetCommand()
-                //.GenerateInsertForSqlServer(person)
-                .GenerateInsertForSqlServer(person.Address);
-
-            //var personModel = command.ExecuteToObject<PersonModel>();
-        }
-
 
         /// <summary>
         /// Save a model from the bottom up (components first)
@@ -243,8 +226,7 @@ namespace Stellar.DAL.Tests
         public void SaveModelBottomUp2(Person person)
         {
             var result = GetInsertCommand(person
-                    .ExtendWith("AddressId", SavedId(person.Address)),
-                    "Person")
+                    .ExtendWith("AddressId", SavedId(person.Address)))
                 .ExecuteToObject<Person>();
 
             result.Address = person.Address;

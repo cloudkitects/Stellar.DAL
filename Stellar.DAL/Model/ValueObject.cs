@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Stellar.DAL.Tests.Data
+namespace Stellar.DAL.Model
 {
     public abstract class ValueObject<T> where T : ValueObject<T>
     {

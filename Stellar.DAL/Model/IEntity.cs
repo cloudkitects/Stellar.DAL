@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Stellar.DAL.Tests.Data
+namespace Stellar.DAL.Model
 {
     public interface IEntity
     {
