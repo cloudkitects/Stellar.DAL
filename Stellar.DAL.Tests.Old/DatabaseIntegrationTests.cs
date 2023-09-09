@@ -1,10 +1,14 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
+
+using NUnit.Framework;
 
 namespace Stellar.DAL.Tests
 {
     /// <summary>
     /// A base class for database integration tests.
     /// </summary>
+    [TestFixture]
     public abstract class DatabaseIntegrationTests : IDisposable
     {
         #region constants
@@ -29,13 +33,11 @@ namespace Stellar.DAL.Tests
             _connectionString += $"Initial Catalog={_database};";
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database);
 
             ExecuteSql(sql);
-
-            GC.SuppressFinalize(this);
         }
         #endregion
 
@@ -62,7 +64,7 @@ namespace Stellar.DAL.Tests
         /// <param name="instance"></param>
         /// <param name="table"></param>
         /// <returns>A database command.</returns>
-        public DatabaseCommand GetInsertCommand(object instance, string? table = null)
+        public DatabaseCommand GetInsertCommand(object instance, string table = null)
         {
             return GetCommand()
                 .GenerateInsertForSqlServer(instance, table);
@@ -74,7 +76,7 @@ namespace Stellar.DAL.Tests
         /// <param name="instance"></param>
         /// <param name="table"></param>
         /// <returns>The number of rows affected.</returns>
-        public long Save(object instance, string? table = null)
+        public long Save(object instance, string table = null)
         {
             return GetInsertCommand(instance, table)
                 .ExecuteNonQuery();
@@ -86,7 +88,7 @@ namespace Stellar.DAL.Tests
         /// <param name="instance"></param>
         /// <param name="table"></param>
         /// <returns>The saved entity Id.</returns>
-        public long SavedId(object instance, string? table = null)
+        public long SavedId(object instance, string table = null)
         {
             return GetInsertCommand(instance, table)
                 .ExecuteScalar<long>();

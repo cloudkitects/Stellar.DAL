@@ -1,4 +1,9 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Dynamic;
+using System.IO;
+using System.Linq;
+
+using AutoMapper;
 
 using Stellar.DAL.Tests.Data;
 

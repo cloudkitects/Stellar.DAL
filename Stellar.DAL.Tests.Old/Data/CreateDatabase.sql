@@ -1,0 +1,6 @@
+﻿USE [master];
+
+IF (SELECT DB_ID('{0}')) IS NULL
+BEGIN
+	CREATE DATABASE [{0}];
+END

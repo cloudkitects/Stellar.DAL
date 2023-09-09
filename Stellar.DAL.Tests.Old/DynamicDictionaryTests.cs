@@ -1,9 +1,14 @@
-﻿namespace Stellar.DAL.Tests
+﻿using System.Collections.Generic;
+using NUnit.Framework;
+using Stellar.DAL.Tests.Data;
+
+namespace Stellar.DAL.Tests
 {
+    [TestFixture]
     public class DynamicDictionaryTests
     {
-        [Fact]
-        public void NonexistentPropertyIsNull()
+        [Test]
+        public void NonexistentProperty()
         {
             dynamic obj = new DynamicDictionary();
 
@@ -12,18 +17,18 @@
             Assert.Null(firstName);
         }
 
-        [Fact]
-        public void CreatesProperty()
+        [Test]
+        public void Assignment()
         {
             dynamic obj = new DynamicDictionary();
 
             obj.FirstName = "Clark";
 
-            Assert.Equal("Clark", obj.FirstName);
+            Assert.That(obj.FirstName == "Clark");
         }
 
-        [Fact]
-        public void CanBeCastedDown()
+        [Test]
+        public void Casting()
         {
             dynamic obj = new DynamicDictionary();
 
@@ -32,8 +37,8 @@
             Assert.NotNull(dictionary);
         }
 
-        [Fact]
-        public void DwoncastingWorks()
+        [Test]
+        public void AccessAfterCasting1()
         {
             dynamic obj = new DynamicDictionary();
 
@@ -41,13 +46,12 @@
 
             var dictionary = (IDictionary<string, object>)obj;
 
-            Assert.True(dictionary.ContainsKey("FirstName"));
-            Assert.Equal("Clark", dictionary["FirstName"].ToString());
-            Assert.Equal(obj.FirstName, $"{dictionary["FirstName"]}");
+            Assert.That(dictionary.ContainsKey("FirstName"));
+            Assert.That(dictionary["FirstName"].ToString() == "Clark");
         }
 
-        [Fact]
-        public void ReferenceUpdatesWork()
+        [Test]
+        public void AccessAfterCasting2()
         {
             dynamic obj = new DynamicDictionary();
 
@@ -55,29 +59,29 @@
 
             dictionary.Add("FirstName", "Clark");
 
-            Assert.Equal("Clark", obj.FirstName);
+            Assert.That(obj.FirstName == "Clark");
         }
 
-        [Fact]
-        public void PropertiesAreCaseInsensitive()
+        [Test]
+        public void CaseSensitivity()
         {
             dynamic obj = new DynamicDictionary();
 
             obj.FirstName = "Clark";
 
-            Assert.Equal("Clark", obj.FIRSTNAME);
-            Assert.Equal("Clark", obj.firstname);
-            Assert.Equal("Clark", obj.fIrStNaMe);
+            Assert.That(obj.FIRSTNAME == "Clark");
+            Assert.That(obj.firstname == "Clark");
+            Assert.That(obj.fIrStNaMe == "Clark");
         }
 
-        [Fact]
-        public void CreatesComposites()
+        [Test]
+        public void AccessAnonymousValue()
         {
             dynamic obj = new DynamicDictionary();
 
             obj.Customer = new { FirstName = "Clark", LastName = "Kent" };
 
-            Assert.Equal("Clark", obj.Customer.FirstName);
+            Assert.That(obj.Customer.FirstName == "Clark");
         }
     }
 }

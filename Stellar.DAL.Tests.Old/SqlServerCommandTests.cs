@@ -1,12 +1,18 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
 using System.Transactions;
 
+using NUnit.Framework;
 using Stellar.DAL.Model;
 using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
+    [TestFixture]
     public class SqlServerCommandTests : DatabaseIntegrationTests
     {
         public SqlServerCommandTests()
@@ -21,7 +27,7 @@ namespace Stellar.DAL.Tests
         }
 
         #region GetDebugCommandObject
-        [Fact]
+        [Test]
         public void GetDebugCommandText()
         {
             var customers = Seed.Customers.ToList();
@@ -39,7 +45,7 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Execute round-trip DML.
         /// </summary>
-        [Fact]
+        [Test]
         public void ExecuteToList()
         {
             var customers = Seed.Customers.ToList();
@@ -59,7 +65,7 @@ namespace Stellar.DAL.Tests
         #endregion
 
         #region ExecuteScalar
-        [Fact]
+        [Test]
         public void GenericExecuteScalarReturnsTheFirstValue()
         {
             var id = GetCommand()
@@ -69,7 +75,7 @@ namespace Stellar.DAL.Tests
             Assert.NotNull(id);
         }
 
-        [Fact]
+        [Test]
         public void ExecuteScalarNullsTheDbCommand()
         {
             var command = GetCommand()
@@ -80,7 +86,7 @@ namespace Stellar.DAL.Tests
             Assert.IsNull(command.DbCommand);
         }
 
-        [Fact]
+        [Test]
         public void ExecuteScalarKeepsTheConnectionOpen()
         {
             var command = GetCommand()
@@ -93,7 +99,7 @@ namespace Stellar.DAL.Tests
             command.Dispose();
         }
 
-        [Fact]
+        [Test]
         public void ExecuteScalarCallsPreExecuteHandler()
         {
             var handlerCalled = false;
@@ -107,7 +113,7 @@ namespace Stellar.DAL.Tests
             Assert.IsTrue(handlerCalled);
         }
 
-        [Fact]
+        [Test]
         public void ExecuteScalarCallsPostExecuteHandler()
         {
             var handlerCalled = false;
@@ -121,7 +127,7 @@ namespace Stellar.DAL.Tests
             Assert.IsTrue(handlerCalled);
         }
 
-        [Fact]
+        [Test]
         public void ExecuteScalarCallsUnhandledExceptionHandler()
         {
             var handlerCalled = false;
@@ -145,7 +151,7 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Test for the OUTPUT Inserted.* clause.
         /// </summary>
-        [Fact]
+        [Test]
         public void InsertAndExecuteToObject()
         {
             var customer = TestHelpers.Map<Customer>(Seed.CustomerWithTraits);
@@ -162,7 +168,7 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Execute round-trip DML.
         /// </summary>
-        [Fact]
+        [Test]
         public void InsertAndExecuteToList()
         {
             using var scope = new TransactionScope();
@@ -267,7 +273,7 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Get an object out.
         /// </summary>
-        [Fact]
+        [Test]
         public void GetModel([Random(1L, 2500L, 2500)] long personId)
         {
             var personModel = GetSelectByIdCommand("Person", personId)
@@ -280,7 +286,7 @@ namespace Stellar.DAL.Tests
             Assert.NotNull(personModel.Address);
         }
 
-        [Fact]
+        [Test]
         public void Delete()
         {
 

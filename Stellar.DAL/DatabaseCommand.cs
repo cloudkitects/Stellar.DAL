@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data.Common;
 
-using JetBrains.Annotations;
-
 namespace Stellar.DAL
 {
     /// <summary>
@@ -23,7 +21,6 @@ namespace Stellar.DAL
         /// <summary>Instantiates a new <see cref="DatabaseCommand" /> from a <see cref="System.Data.Common.DbCommand" />.</summary>
         /// <param name="dbCommand">DbCommand.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="dbCommand" /> parameter is null.</exception>
-        [UsedImplicitly]
         public DatabaseCommand(DbCommand dbCommand)
         {
             DbCommand = dbCommand ?? throw new ArgumentNullException(nameof(dbCommand));
