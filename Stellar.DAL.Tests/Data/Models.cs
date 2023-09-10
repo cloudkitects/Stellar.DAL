@@ -13,11 +13,10 @@ namespace Stellar.DAL.Tests.Data
     /// </summary>
     public class CustomerWithFields
     {
-        // ReSharper disable once UnusedMember.Global
         public long? CustomerId;
-        public string FirstName;
-        public string LastName;
-        public DateTime DateOfBirth;
+        public string? FirstName;
+        public string? LastName;
+        public DateTime? DateOfBirth;
     }
 
     /// <summary>
@@ -26,19 +25,19 @@ namespace Stellar.DAL.Tests.Data
     public class Customer : Entity
     {
         public long? CustomerId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 
     /// <summary>
     /// A customer model.
     /// </summary>
-    public class CustomerModel : Customer
+    public class CustomerWithTraits : Customer
     {
-        public IEnumerable<string> Traits { get; set; }
+        public IEnumerable<string>? Traits { get; set; }
 
-        public void ApplyBusinessLogic() { }
+        //public void ApplyBusinessLogic() { }
     }
 
     /// <summary>

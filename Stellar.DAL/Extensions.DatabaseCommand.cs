@@ -663,11 +663,9 @@ namespace Stellar.DAL
 
                 var dbProviderFactory = DbProviderFactories.GetFactory(databaseCommand.DbCommand.Connection);
 
-                var dataAdapter = dbProviderFactory.CreateDataAdapter();
-
-                if (dataAdapter == null)
+                var dataAdapter = dbProviderFactory.CreateDataAdapter() ??
                     throw new Exception("An unexpected null was returned from a call to DbProviderFactory.CreateDataAdapter().");
-
+                
                 dataAdapter.SelectCommand = databaseCommand.DbCommand;
 
                 dataAdapter.Fill(dataSet);

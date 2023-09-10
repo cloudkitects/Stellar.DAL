@@ -12,12 +12,18 @@ namespace Stellar.DAL.Tests
         {
             public AutoMapperProfile()
             {
-                CreateMap<CustomerModel, Customer>();
-                CreateMap<Customer, CustomerModel>();
+                CreateMap<CustomerWithTraits, Customer>();
+                CreateMap<Customer, CustomerWithTraits>();
             }
         }
 
         public static readonly Mapper Mapper;
+        #endregion
+
+        #region properties
+        public static readonly string Root = System.Reflection.Assembly
+                .GetExecutingAssembly()?.GetName()?.Name?
+                .Replace('.', '-') ?? "unit-tests";
         #endregion
 
         #region constructors
@@ -48,6 +54,11 @@ namespace Stellar.DAL.Tests
 
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
+        }
+
+        public static string TestDbName()
+        {
+            return $"{Root}-{RandomString(6)}";
         }
 
         public static string ParseSqlFile(string name, string database)

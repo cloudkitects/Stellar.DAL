@@ -6,17 +6,25 @@ using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
+    [Collection("Database collection")]
     public class DbCommandExtensionsTests
     {
+        readonly DatabaseFixture database;
+        
         private const string Template = "INSERT INTO {0} ({1}) VALUES({2});";
+
+        public DbCommandExtensionsTests(DatabaseFixture fixture)
+        {
+            database = fixture;
+        }
 
         /// <summary>
         /// Gets a <see cref="DbCommand"/> for testing purposes.
         /// </summary>
         /// <returns><see cref="DbCommand"/> instance.</returns>
-        public static DbCommand GetCommand()
+        public DbCommand GetCommand()
         {
-            return DatabaseClient.GetCommand(@"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;").DbCommand;
+            return database.GetCommand().DbCommand;
         }
 
         #region AddParameters
@@ -63,11 +71,12 @@ namespace Stellar.DAL.Tests
             var alterEgoFirstName = new KeyValuePair<string, object>("@AlterEgoFirstName", "Clark");
             var alterEgoLastName = new KeyValuePair<string, object>("@AlterEgoLastName", "Kent");
 
-            IDictionary<string, object> dictionary = new Dictionary<string, object>();
-
-            dictionary.Add(superHeroName);
-            dictionary.Add(alterEgoFirstName);
-            dictionary.Add(alterEgoLastName);
+            IDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                { superHeroName.Key, superHeroName.Value },
+                { alterEgoFirstName.Key, alterEgoFirstName.Value },
+                { alterEgoLastName.Key, alterEgoLastName.Value }
+            };
 
             command = command.AddParameters(dictionary);
 
@@ -417,7 +426,7 @@ namespace Stellar.DAL.Tests
         public void GenerateInsertCommandFromObjectWithFields()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template);
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template);
 
             Assert.NotNull(command.CommandText);
             Assert.Contains("INSERT", command.CommandText);
@@ -438,7 +447,7 @@ namespace Stellar.DAL.Tests
         public void GenerateInsertCommandWithTypeNameAsTableName()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template);
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template);
 
             Assert.Contains("Customer", command.CommandText);
         }
@@ -447,7 +456,7 @@ namespace Stellar.DAL.Tests
         public void GenerateInsertCommandWithSuppliedTableName()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template, "[Person]");
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template, "[Person]");
 
             Assert.Contains("[Person]", command.CommandText);
         }
@@ -456,13 +465,13 @@ namespace Stellar.DAL.Tests
         public void GenerateInsertCommandWithParameterNamesFromObjectFields()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template, "[Person]");
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template, "[Person]");
 
             var parameters = command.Parameters.Cast<DbParameter>().ToList();
 
-            Assert.Equal(Seed.SCustomerWithFields.FirstName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@FirstName"))?.Value?.ToString());
-            Assert.Equal(Seed.SCustomerWithFields.LastName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@LastName"))?.Value?.ToString());
-            Assert.Equal(Seed.SCustomerWithFields.DateOfBirth.ToString(CultureInfo.CurrentCulture), parameters.FirstOrDefault(x => x.ParameterName.Contains("@DateOfBirth"))?.Value?.ToString());
+            Assert.Equal(Seed.CustomerWithFields.FirstName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@FirstName"))?.Value?.ToString());
+            Assert.Equal(Seed.CustomerWithFields.LastName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@LastName"))?.Value?.ToString());
+            Assert.Equal(Seed.CustomerWithFields.DateOfBirth?.ToString(CultureInfo.CurrentCulture), parameters.FirstOrDefault(x => x.ParameterName.Contains("@DateOfBirth"))?.Value?.ToString());
 
             Assert.Contains("@FirstName", command.CommandText);
             Assert.Contains("@LastName", command.CommandText);
@@ -472,7 +481,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandWithAnonymousObject()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
@@ -485,7 +494,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandWithAnonymousObjectAndNoTableNameThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
@@ -515,7 +524,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandWithNullTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
@@ -531,7 +540,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandWithEmptyTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
@@ -547,7 +556,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandWithInvalidTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
@@ -563,7 +572,7 @@ namespace Stellar.DAL.Tests
         [Fact]
         public void GenerateInsertCommandDoesNotEscapeTableNameByDefault()
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand()
                 .GenerateInsertCommand(customer, Template);
@@ -577,7 +586,7 @@ namespace Stellar.DAL.Tests
         [InlineData(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
         public void GenerateInsertCommandEscapesTableName(KeywordEscapeMethod keywordEscapeMethod, char prefix, char suffix)
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand()
                 .GenerateInsertCommand(customer, Template, null, keywordEscapeMethod);
@@ -591,7 +600,7 @@ namespace Stellar.DAL.Tests
         [InlineData(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
         public void GenerateInsertCommandEscapesColumnNames(KeywordEscapeMethod keywordEscapeMethod, char prefix, char suffix)
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand();
 

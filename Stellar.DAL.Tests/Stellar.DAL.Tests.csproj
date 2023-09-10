@@ -40,6 +40,9 @@
     <None Update="Data\CreateTables.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Data\DropLocalDatabases.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\DropDatabase.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

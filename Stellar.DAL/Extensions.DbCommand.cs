@@ -593,7 +593,7 @@ namespace Stellar.DAL
         /// much overhead (the first check of the equality comparer). See <a href="https://stackoverflow.com/questions/18507715">Why is string.IsNullOprEmpty faster than comparison</a>
         /// for more.
         /// </remarks>
-        public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None, string output = null)
+        public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
         {
             if (item == null)
             {

@@ -29,13 +29,8 @@ namespace Stellar.DAL
             {
                 AccessToken = accessToken,
                 ConnectionString = connectionString
-            };
-
-            if (connection == null)
-            {
-                throw new Exception("Unable to create a System.Data.SqlClient.SqlConnection with the provided values.");
-            }
-
+            } ?? throw new Exception("Unable to create a System.Data.SqlClient.SqlConnection with the provided values.");
+            
             connection.ConnectionString = connectionString;
 
             return connection;
