@@ -2,20 +2,17 @@
 
 public class DatabaseFixture : IDisposable
 {
-    /// <summary>
-    /// A connection string to a MS SQL Server local instance.
-    /// </summary>
     private readonly string _connectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;";
+
+    private readonly string _database = TestHelpers.TestDbName();
 
     public DatabaseFixture()
     {
-        var database = TestHelpers.TestDbName();
+        var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteSql(sql1);
+        var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", _database); ExecuteSql(sql2);
+        var sql3 = TestHelpers.ParseSqlFile(@"Data\CreateTables.sql", _database); ExecuteSql(sql3);
 
-        var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", database); ExecuteSql(sql1);
-        var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", database); ExecuteSql(sql2);
-        var sql3 = TestHelpers.ParseSqlFile(@"Data\CreateTables.sql", database); ExecuteSql(sql3);
-
-        _connectionString += $"Initial Catalog={database};";
+        _connectionString += $"Initial Catalog={_database};";
 
         GetCommand()
             .SetCommandText(@$"BULK INSERT Person FROM '{Directory.GetCurrentDirectory()}\Data\persons2.tsv';")
@@ -28,9 +25,9 @@ public class DatabaseFixture : IDisposable
 
     void IDisposable.Dispose()
     {
-        //var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteSql(sql);
+        var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteSql(sql);
 
-        //GC.SuppressFinalize(this);
+        GC.SuppressFinalize(this);
     }
 
     #region helpers
