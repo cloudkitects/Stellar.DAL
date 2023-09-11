@@ -75,55 +75,7 @@ namespace Stellar.DAL
         /// </exception>
         public static DatabaseCommand GetCommand(string connectionString = null)
         {
-            var connection = CreateConnection(connectionString);
-
-            var databaseCommand = new DatabaseCommand(connection);
-
-            return databaseCommand;
-        }
-
-        /// <summary>Gets a <see cref="DatabaseCommand" /> that interacts with a Microsoft SQL Server database.</summary>
-        /// <param name="connectionString">Connection string.</param>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        /// <exception cref="ConnectionStringNotFoundException">
-        /// Thrown when no ConnectionString could be found. A valid ConnectionString must be supplied.
-        /// </exception>
-        /// <exception cref="Exception">
-        /// An unknown error occurred creating a connection.
-        /// </exception>
-        public static DatabaseCommand GetCommandForSqlServer(string connectionString = null)
-        {
-            return GetCommand(connectionString);
-        }
-
-        /// <summary>Gets a <see cref="DatabaseCommand" /> that interacts with a Microsoft SQL Server database.</summary>
-        /// <param name="connectionString">Connection string.</param>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        /// <exception cref="ConnectionStringNotFoundException">
-        /// Thrown when no ConnectionString could be found. A valid ConnectionString must be supplied.
-        /// </exception>
-        /// <exception cref="Exception">
-        /// An unknown error occurred creating a connection.
-        /// </exception>
-        // ReSharper disable once InconsistentNaming
-        public static DatabaseCommand GetCommandForSQLite(string connectionString = null)
-        {
-            return GetCommand(connectionString);
-        }
-
-        /// <summary>Gets a <see cref="DatabaseCommand" /> that interacts with a Microsoft SQL Server database.</summary>
-        /// <param name="connectionString">Connection string.</param>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        /// <exception cref="ConnectionStringNotFoundException">
-        /// Thrown when no ConnectionString could be found. A valid ConnectionString must be supplied.
-        /// </exception>
-        /// <exception cref="Exception">
-        /// An unknown error occurred creating a connection.
-        /// </exception>
-        // ReSharper disable once InconsistentNaming
-        public static DatabaseCommand GetCommandForMySql(string connectionString = null)
-        {
-            return GetCommand(connectionString);
+            return new(CreateConnection(connectionString));
         }
         #endregion
     }

@@ -149,7 +149,7 @@ namespace Stellar.DAL.Tests
 
             var command = database.GetCommand();
 
-            command.GenerateInsertForSqlServer(customer, "Customer");
+            command.GenerateSqlServerInsertWithOutput(customer, "Customer");
 
             var customerModel = command.ExecuteToObject<CustomerWithTraits>();
 
@@ -203,8 +203,7 @@ namespace Stellar.DAL.Tests
         {
             var addressId = database.SavedId(person.Address);
 
-            var rowsAffected = database.Save(person
-                .ExtendWith("AddressId", addressId));
+            var rowsAffected = database.Insert(person.ExtendWith("AddressId", addressId));
 
             Assert.True(rowsAffected > 0);
         }
@@ -222,13 +221,14 @@ namespace Stellar.DAL.Tests
                     .ExtendWith("AddressId", database.SavedId(person.Address)))
                 .ExecuteToObject<Person>();
 
+            // sad state of affairs if we cannot encapsulate composition.
             result.Address = person.Address;
 
             Assert.Equal(person.FirstName, result.FirstName);
             Assert.Equal(person.LastName, result.LastName);
             Assert.Equal(person.Email, result.Email);
             Assert.Equal(person.Phone, result.Phone);
-            Assert.Equal(person.Address.City, result.Address.City);
+            Assert.Equal(person.Address?.City, result.Address?.City);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Stellar.DAL.Tests
             Assert.Equal(model.LastName, personModel.LastName);
             Assert.Equal(model.Email, personModel.Email);
             Assert.Equal(model.Phone, personModel.Phone);
-            Assert.Equal(model.Address.City, personModel.Address.City);
+            Assert.Equal(model.Address?.City, personModel.Address?.City);
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace Stellar.DAL.Tests
             Assert.Equal(first, person.FirstName);
             Assert.Equal(last, person.LastName);
             Assert.Equal(line1, person.Address.Line1);
-            Assert.Equal(city, person.Address.City);
+            Assert.Equal(city, person.Address?.City);
         }
 
         //[Fact]

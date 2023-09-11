@@ -8,9 +8,9 @@ public class DatabaseFixture : IDisposable
 
     public DatabaseFixture()
     {
-        var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteSql(sql1);
-        var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", _database); ExecuteSql(sql2);
-        var sql3 = TestHelpers.ParseSqlFile(@"Data\CreateTables.sql", _database); ExecuteSql(sql3);
+        var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteNonQuery(sql1);
+        var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", _database); ExecuteNonQuery(sql2);
+        var sql3 = TestHelpers.ParseSqlFile(@"Data\CreateTables.sql", _database); ExecuteNonQuery(sql3);
 
         _connectionString += $"Initial Catalog={_database};";
 
@@ -25,19 +25,12 @@ public class DatabaseFixture : IDisposable
 
     void IDisposable.Dispose()
     {
-        var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteSql(sql);
+        var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteNonQuery(sql);
 
         GC.SuppressFinalize(this);
     }
 
     #region helpers
-    public long ExecuteSql(string sql)
-    {
-        return GetCommand()
-            .SetCommandText(sql)
-            .ExecuteNonQuery();
-    }
-
     /// <summary>
     /// Gets a <see cref="DbCommand"/> for testing purposes.
     /// </summary>
@@ -45,6 +38,13 @@ public class DatabaseFixture : IDisposable
     public DatabaseCommand GetCommand()
     {
         return DatabaseClient.GetCommand(_connectionString);
+    }
+
+    public long ExecuteNonQuery(string sql)
+    {
+        return GetCommand()
+            .SetCommandText(sql)
+            .ExecuteNonQuery();
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public class DatabaseFixture : IDisposable
     public DatabaseCommand GetInsertCommand(object instance, string? table = null)
     {
         return GetCommand()
-            .GenerateInsertForSqlServer(instance, table);
+            .GenerateSqlServerInsertWithOutput(instance, table);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public class DatabaseFixture : IDisposable
     /// <param name="instance"></param>
     /// <param name="table"></param>
     /// <returns>The number of rows affected.</returns>
-    public long Save(object instance, string? table = null)
+    public long Insert(object instance, string? table = null)
     {
         return GetInsertCommand(instance, table)
             .ExecuteNonQuery();
@@ -77,8 +77,13 @@ public class DatabaseFixture : IDisposable
     /// <param name="instance"></param>
     /// <param name="table"></param>
     /// <returns>The saved entity Id.</returns>
-    public long SavedId(object instance, string? table = null)
+    public long SavedId(object? instance, string? table = null)
     {
+        if (instance is null)
+        {
+            return 0;
+        }
+        
         return GetInsertCommand(instance, table)
             .ExecuteScalar<long>();
     }

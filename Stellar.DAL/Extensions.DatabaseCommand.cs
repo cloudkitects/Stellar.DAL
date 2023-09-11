@@ -364,9 +364,24 @@ namespace Stellar.DAL
         /// <param name="item">Object to generate the SQL INSERT statement from.</param>
         /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
         /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-        public static DatabaseCommand GenerateInsertForSqlServer(this DatabaseCommand databaseCommand, object item, string table = null)
+        public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand databaseCommand, object item, string table = null)
         {
-            databaseCommand.DbCommand.GenerateInsertForSqlServer(item, table);
+            databaseCommand.DbCommand.GenerateSqlServerInsert(item, table);
+
+            return databaseCommand;
+        }
+
+        /// <summary>
+        /// Generates a parameterized SQL Server INSERT statement from the given object and adds it to the
+        /// <see cref="DatabaseCommand" />.
+        /// </summary>
+        /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
+        /// <param name="item">Object to generate the SQL INSERT statement from.</param>
+        /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
+        /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
+        public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand databaseCommand, object item, string table = null)
+        {
+            databaseCommand.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
 
             return databaseCommand;
         }
