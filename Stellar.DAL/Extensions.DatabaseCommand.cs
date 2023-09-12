@@ -605,15 +605,13 @@ namespace Stellar.DAL
         /// </param>
         /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
         /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
-        public static List<T> ExecuteToMap<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
+        public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
         {
             var list = new List<T>();
 
-            databaseCommand.ExecuteReader(reader =>
+            databaseCommand.ExecuteReader(callback =>
             {
-                var mappedObject = mapper.Invoke(reader);
-
-                list.Add(mappedObject);
+                list.Add(mapper.Invoke(callback));
             }, keepConnectionOpen);
 
             return list;
@@ -628,16 +626,21 @@ namespace Stellar.DAL
         /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
         public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
         {
-            return databaseCommand.ExecuteToMap(DataRecordMapper.Map<T>, keepConnectionOpen);
+            return databaseCommand.ExecuteToList(ToObject<T>, keepConnectionOpen);
         }
 
         /// <summary>
-        /// Executes a statement against a database and maps matching column names to a type of <typeparamref name="T" />.
+        /// Executes a statement against a database and maps the results to an object of type <typeparamref name="T" />
+        /// using a given <paramref name="mapper" /> function.
         /// </summary>
         /// <typeparam name="T">The type to map the results to.</typeparam>
         /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
+        /// <param name="mapper">
+        /// A method that takes an <see cref="IDataRecord" /> as an argument and returns an instance of type
+        /// <typeparamref name="T" />.
+        /// </param>
         /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-        /// <returns>Results mapped to a type of <typeparamref name="T" />.</returns>
+        /// <returns>An object of type <typeparamref name="T" />.</returns>
         public static T ExecuteToObject<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false) where T : new()
         {
             return databaseCommand.ExecuteToList<T>(keepConnectionOpen).FirstOrDefault();
@@ -649,7 +652,7 @@ namespace Stellar.DAL
         /// <returns>Results mapped to a list of type dynamic.</returns>
         public static List<dynamic> ExecuteToDynamicList(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
         {
-            return databaseCommand.ExecuteToMap(DataRecordMapper.MapDynamic, keepConnectionOpen);
+            return databaseCommand.ExecuteToList(ToDynamic, keepConnectionOpen);
         }
 
         /// <summary>Executes a statement against a database and maps the result to a dynamic object.</summary>

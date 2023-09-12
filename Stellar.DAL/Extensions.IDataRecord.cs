@@ -5,45 +5,39 @@ using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
-    /// <summary>Provides methods for mapping an <see cref="IDataRecord" /> to different types.</summary>
-    public static class DataRecordMapper
+    public static partial class Extensions
     {
         /// <summary>Maps an <see cref="IDataRecord" /> to a type of <typeparamref name="T" />.</summary>
         /// <remarks>This method internally uses caching to increase performance.</remarks>
         /// <typeparam name="T">The type to map to.</typeparam>
         /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
         /// <returns>A mapped instance of <typeparamref name="T" />.</returns>
-        /// <exception cref="PropertySetValueException">
-        /// Thrown when an error occurs when attempting to assign a value to a property.
-        /// </exception>
-        /// <exception cref="FieldSetValueException">Thrown when an error occurs when attempting to assign a value to a field.</exception>
-        public static T Map<T>(this IDataRecord dataRecord)
+        /// <exception cref="TypeConversionException">A value cannot be converted.</exception>
+        /// <exception cref="PropertySetValueException">A converted value cannot be assigned to a property.</exception>
+        /// <exception cref="FieldSetValueException">A converted value cannot be assigned to a field.</exception>
+        public static T ToObject<T>(this IDataRecord dataRecord)
         {
-            var type = typeof(T);
-
             var fieldCount = dataRecord.FieldCount;
+            var type = typeof(T);
 
             // Handle mapping to primitives and strings when there is only a single field in the record
             if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
             {
-                var convertedValue = TypeConverter.Convert(dataRecord.GetValue(0), type);
-
-                return (T)convertedValue;
+                return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
             }
 
-            var mappedObject = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
+            var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
+            var mapped = false;
 
-            var didAssignValues = false;
-
-            // ordered dictionary with case-insensitive property or field name as key
-            // and PropertyInfo or FieldInfo as value
+            // { case-insensitive property/field name, property/field info }
             var orderedDictionary = TypeCache.GetMetadata(type);
 
             for (var i = 0; i < fieldCount; i++)
             {
-                var dataRecordFieldName = dataRecord.GetName(i).ToLower();
+                var fieldName = dataRecord.GetName(i).ToLower();
 
-                var memberInfo = orderedDictionary[dataRecordFieldName];
+                // TODO: here's where we'd take advantage of name conversion...
+                var memberInfo = orderedDictionary[fieldName];
 
                 switch (memberInfo)
                 {
@@ -63,14 +57,14 @@ namespace Stellar.DAL
 
                         try
                         {
-                            propertyInfo.SetValue(mappedObject, convertedValue, null);
+                            propertyInfo.SetValue(obj, convertedValue, null);
 
-                            didAssignValues = true;
+                            mapped = true;
                         }
                         catch (Exception exception)
                         {
                             throw new PropertySetValueException(
-                                $"An error occurred while attempting to assign the value '{value}' to property '{propertyInfo.Name}' of type '{propertyInfo.PropertyType}' on class type {type}", exception);
+                                $"Unable to assign '{convertedValue}' to {type}.{propertyInfo.Name} ({propertyInfo.PropertyType}).", exception);
                         }
 
                         break;
@@ -88,14 +82,14 @@ namespace Stellar.DAL
 
                         try
                         {
-                            fieldInfo.SetValue(mappedObject, convertedValue);
+                            fieldInfo.SetValue(obj, convertedValue);
 
-                            didAssignValues = true;
+                            mapped = true;
                         }
                         catch (Exception exception)
                         {
                             throw new FieldSetValueException(
-                                $"An error occurred while attempting to assign the value '{value}' to field '{fieldInfo.Name}' of type '{fieldInfo.FieldType}' on class type {type}", exception);
+                                $"Error assigning '{value}' to '{type}.{fieldInfo.Name} ({fieldInfo.FieldType})'.", exception);
                         }
 
                         break;
@@ -103,16 +97,15 @@ namespace Stellar.DAL
                 }
             }
 
-            // if no values were assigned, attempt to map the value directly to the type
-            return didAssignValues || fieldCount != 1
-                ? (T)mappedObject
+            return mapped || fieldCount != 1
+                ? (T)obj
                 : (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
         }
 
         /// <summary>Maps an <see cref="IDataRecord" /> to a type of dynamic object.</summary>
         /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
         /// <returns>A dynamic object.</returns>
-        public static dynamic MapDynamic(this IDataRecord dataRecord)
+        public static dynamic ToDynamic(this IDataRecord dataRecord)
         {
             dynamic obj = new DynamicDictionary();
 
