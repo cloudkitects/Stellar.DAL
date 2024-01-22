@@ -1,44 +1,16 @@
-﻿using System;
+﻿using Stellar.DAL.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Stellar.DAL.Model;
 
 namespace Stellar.DAL
 {
     public static partial class Extensions
     {
-        #region Insert templates
-        /// <summary>
-        /// The ANSI SQL INSERT command template. Timeless :)
-        /// </summary>
-        private static readonly string AnsiSqlInsertTemplate = @$"INSERT INTO {{0}}({{1}}) VALUES({{2}});{Environment.NewLine}";
-
-        /// <summary>
-        /// The SQL Server INSERT command template--outputs the inserted object(s) back.
-        /// </summary>
-        private static readonly string SqlServerInsertTemplate = @$"INSERT INTO {{0}}({{1}}) OUTPUT Inserted.* VALUES({{2}});{Environment.NewLine}";
-
-        /// <summary>
-        /// The SQL Server INSERT command template.
-        /// </summary>
-        ///private static readonly string SqlServerInsertTemplate = AnsiSqlInsertTemplate + "SELECT SCOPE_IDENTITY() AS [LastInsertedId];";
-
-        /// <summary>
-        /// MySql INSERT command template, returns the last inserted id(s).
-        /// </summary>
-        public static string MySqlInsertTemplate { get; set; } = AnsiSqlInsertTemplate + "SELECT LAST_INSERT_ID() AS LastInsertedId;";
-
-        /// <summary>
-        /// SqLite INSERT command template, returns the last inserted row id(s).
-        /// </summary>
-        public static string SqLiteInsertTemplate { get; set; } = AnsiSqlInsertTemplate + "SELECT last_insert_rowid() AS [LastInsertedId];";
-        #endregion
-
         #region Select templates
         /// <summary>
         /// The SQL Server SELECT command template.
@@ -48,7 +20,7 @@ namespace Stellar.DAL
         /// <summary>
         /// Custom SQL Server SELECT.
         /// </summary>
-        private static readonly string SqlServerSelectByIdTemplate = @$"SELECT * FROM {{0}} WHERE ({{1}}Id = @{{1}}Id);{Environment.NewLine}";
+        private static readonly string SqlServerSelectByIdTemplate = @$"SELECT * FROM {{0}} WHERE ({{1}}Id = @{{1}}Id);";
         #endregion
 
         #region Set properties
@@ -399,6 +371,31 @@ namespace Stellar.DAL
         #endregion
 
         #region Generate inserts
+        /// <summary>
+        /// The ANSI SQL INSERT command template. Timeless :)
+        /// </summary>
+        private static readonly string AnsiSqlInsert = @$"INSERT INTO {{0}}({{1}}) VALUES({{2}});";
+
+        /// <summary>
+        /// The SQL Server INSERT command template--outputs the inserted object(s) back.
+        /// </summary>
+        private static readonly string SqlServerInsertWithOutput = @$"INSERT INTO {{0}}({{1}}) OUTPUT Inserted.* VALUES({{2}});{Environment.NewLine}";
+
+        /// <summary>
+        /// The SQL Server INSERT command template.
+        /// </summary>
+        private static readonly string SqlServerInsert = AnsiSqlInsert + "SELECT SCOPE_IDENTITY();";
+
+        /// <summary>
+        /// MySql INSERT command template, returns the last inserted id(s).
+        /// </summary>
+        public static string MySqlInsert { get; set; } = AnsiSqlInsert + "SELECT LAST_INSERT_ID();";
+
+        /// <summary>
+        /// SqLite INSERT command template, returns the last inserted row id(s).
+        /// </summary>
+        public static string SqLiteInsert { get; set; } = AnsiSqlInsert + "SELECT last_insert_rowid();";
+
         #region MySql
         /// <summary>
         /// Generates a parameterized MySQL INSERT statement from the given object and adds it to the <see cref="DbCommand" />.
@@ -419,7 +416,7 @@ namespace Stellar.DAL
         /// </exception>
         public static DbCommand GenerateInsertForMySql(this DbCommand command, object item, string table = null)
         {
-            return command.GenerateInsertCommand(item, MySqlInsertTemplate, table, KeywordEscapeMethod.Backtick);
+            return command.GenerateInsertCommand(item, MySqlInsert, table, KeywordEscapeMethod.Backtick);
         }
 
         /// <summary>
@@ -445,7 +442,7 @@ namespace Stellar.DAL
         {
             foreach (var item in list)
             {
-                command.GenerateInsertCommand(item, MySqlInsertTemplate, table, KeywordEscapeMethod.Backtick);
+                command.GenerateInsertCommand(item, MySqlInsert, table, KeywordEscapeMethod.Backtick);
             }
 
             return command;
@@ -474,7 +471,7 @@ namespace Stellar.DAL
         // ReSharper disable once InconsistentNaming
         public static DbCommand GenerateInsertForSQLite(this DbCommand command, object item, string table = null)
         {
-            return command.GenerateInsertCommand(item, SqLiteInsertTemplate, table, KeywordEscapeMethod.SquareBracket);
+            return command.GenerateInsertCommand(item, SqLiteInsert, table, KeywordEscapeMethod.SquareBracket);
         }
 
         /// <summary>
@@ -501,7 +498,7 @@ namespace Stellar.DAL
         {
             foreach (var item in list)
             {
-                command.GenerateInsertCommand(item, SqLiteInsertTemplate, table, KeywordEscapeMethod.SquareBracket);
+                command.GenerateInsertCommand(item, SqLiteInsert, table, KeywordEscapeMethod.SquareBracket);
             }
 
             return command;
@@ -510,25 +507,36 @@ namespace Stellar.DAL
 
         #region SqlServer
         /// <summary>
-        /// Generates a parameterized SQL Server INSERT statement from the given object and adds it to the
-        /// <see cref="DbCommand" />.
-        /// <para>
-        /// Note that the generated query also selects the last inserted id using SQL Server's SELECT SCOPE_IDENTITY() function.
-        /// </para>
+        /// Generates a parameterized SQL Server INSERT statement for an item followed by a
+        /// SELECT SCOPE_IDENTITY() (numeric(38,0) == System.Decimal, 29 digits) statement.
         /// </summary>
         /// <param name="command"><see cref="DbCommand" /> instance.</param>
         /// <param name="item">Object to generate the SQL INSERT statement from.</param>
-        /// <param name="table">
-        /// Optional table name to insert into. If none is supplied, it will use the type name. Note that this parameter is
-        /// required when passing in an anonymous object or an <see cref="ArgumentNullException" /> will be thrown.
-        /// </param>
+        /// <param name="table">Optional table name to insert into, derived from the type name if none is supplied, required
+        /// when item is anonymous.</param>
         /// <returns>The given <see cref="DbCommand" /> instance.</returns>
         /// <exception cref="ArgumentNullException">
-        /// The value of 'table' cannot be null when the object passed is an anonymous type.
+        /// 'table' cannot be null when item is anonymous.
         /// </exception>
-        public static DbCommand GenerateInsertForSqlServer(this DbCommand command, object item, string table = null)
+        public static DbCommand GenerateSqlServerInsert(this DbCommand command, object item, string table = null)
         {
-            return command.GenerateInsertCommand(item, SqlServerInsertTemplate, table, KeywordEscapeMethod.SquareBracket);
+            return command.GenerateInsertCommand(item, SqlServerInsert, table, KeywordEscapeMethod.SquareBracket);
+        }
+
+        /// <summary>
+        /// Generates a parameterized SQL Server INSERT statement with an OUTPUT clause.
+        /// </summary>
+        /// <param name="command"><see cref="DbCommand" /> instance.</param>
+        /// <param name="item">Object to generate the SQL INSERT statement from.</param>
+        /// <param name="table">Optional table name to insert into, derived from the type name if none is supplied, required
+        /// when item is anonymous.</param>
+        /// <returns>The given <see cref="DbCommand" /> instance.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// 'table' cannot be null when item is anonymous.
+        /// </exception>
+        public static DbCommand GenerateSqlServerInsertWithOutput(this DbCommand command, object item, string table = null)
+        {
+            return command.GenerateInsertCommand(item, SqlServerInsertWithOutput, table, KeywordEscapeMethod.SquareBracket);
         }
 
         /// <summary>
@@ -554,7 +562,7 @@ namespace Stellar.DAL
         {
             foreach (var item in list)
             {
-                command.GenerateInsertCommand(item, SqlServerInsertTemplate, table, KeywordEscapeMethod.SquareBracket);
+                command.GenerateInsertCommand(item, SqlServerInsertWithOutput, table, KeywordEscapeMethod.SquareBracket);
             }
             
             return command;
@@ -562,7 +570,7 @@ namespace Stellar.DAL
 
         public static DbCommand GenerateAggregateInsertForSqlServer(this DbCommand command, object item, string table = null)
         {
-            return command.GenerateInsertCommand(item, SqlServerInsertTemplate, table, KeywordEscapeMethod.SquareBracket);
+            return command.GenerateInsertCommand(item, SqlServerInsertWithOutput, table, KeywordEscapeMethod.SquareBracket);
         }
         #endregion
 
@@ -593,9 +601,9 @@ namespace Stellar.DAL
         /// much overhead (the first check of the equality comparer). See <a href="https://stackoverflow.com/questions/18507715">Why is string.IsNullOprEmpty faster than comparison</a>
         /// for more.
         /// </remarks>
-        public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None, string output = null)
+        public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
         {
-            if (item == null)
+            if (item is null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
@@ -605,33 +613,24 @@ namespace Stellar.DAL
                 throw new ArgumentNullException(nameof(template), "The parameter must not be null, empty, or whitespace.");
             }
 
-            if (template.Contains("{0}") == false || template.Contains("{1}") == false || template.Contains("{2}") == false)
+            if (!(template.Contains("{0}") && template.Contains("{1}") && template.Contains("{2}")))
             {
-                throw new Exception("The template does not conform to the requirements of containing three arguments, e.g. 'INSERT INTO {0} ({1}) VALUES({2});'");
+                throw new Exception($"The template must define three arguments, e.g., {AnsiSqlInsert}.");
             }
 
-            if (table == null && item.IsAnonymousType())
+            if (table is null && item.IsAnonymousType())
             {
-                throw new ArgumentNullException(nameof(table), "The 'table' parameter must be provided when the object supplied is an anonymous type.");
+                throw new ArgumentNullException(nameof(table), "table parameter is required when item is anonymous.");
             }
 
-            var prefix = string.Empty;
-            var suffix = string.Empty;
+            var p = string.Empty;
+            var s = string.Empty;
 
             switch (keywordEscapeMethod)
             {
-                case KeywordEscapeMethod.SquareBracket:
-                    prefix = "[";
-                    suffix = "]";
-                    break;
-                case KeywordEscapeMethod.DoubleQuote:
-                    prefix = "\"";
-                    suffix = "\"";
-                    break;
-                case KeywordEscapeMethod.Backtick:
-                    prefix = "`";
-                    suffix = "`";
-                    break;
+                case KeywordEscapeMethod.SquareBracket: p = "[";  s = "]";  break;
+                case KeywordEscapeMethod.DoubleQuote:   p = "\""; s = "\""; break;
+                case KeywordEscapeMethod.Backtick:      p = "`";  s = "`";  break;
                 case KeywordEscapeMethod.None:
                     goto default;
                 default:
@@ -639,10 +638,10 @@ namespace Stellar.DAL
             }
 
             // get schema & table from object attribute
-            table ??= BuildEntityName(item, prefix, suffix);
+            table ??= BuildEntityName(item, p, s);
 
-            var columns = new StringBuilder();
-            var values = new StringBuilder();
+            var columns = new List<string>();
+            var values = new List<string>();
 
             var namesAndValues = TypeCache.GetMetadataAndValues(item);
 
@@ -655,17 +654,16 @@ namespace Stellar.DAL
 
                 var name = $"@{key}_p{command.Parameters.Count}";
 
-                columns.Append($"{prefix}{key}{suffix},");
-                values.Append($"{name},");
+                columns.Add($"{p}{key}{s}");
+                values.Add(name);
 
                 command.AddParameter(name, value);
             }
 
             command.AppendCommandText(string.Format(template,
                 table,
-                columns.ToString().TrimEnd(','),
-                values.ToString().TrimEnd(',')));
-            
+                string.Join(',', columns),
+                string.Join(',', values)));
 
             return command;
         }

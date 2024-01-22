@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using Stellar.DAL.Model;
 
@@ -13,11 +10,10 @@ namespace Stellar.DAL.Tests.Data
     /// </summary>
     public class CustomerWithFields
     {
-        // ReSharper disable once UnusedMember.Global
         public long? CustomerId;
-        public string FirstName;
-        public string LastName;
-        public DateTime DateOfBirth;
+        public string? FirstName;
+        public string? LastName;
+        public DateTime? DateOfBirth;
     }
 
     /// <summary>
@@ -26,19 +22,19 @@ namespace Stellar.DAL.Tests.Data
     public class Customer : Entity
     {
         public long? CustomerId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 
     /// <summary>
     /// A customer model.
     /// </summary>
-    public class CustomerModel : Customer
+    public class CustomerWithTraits : Customer
     {
-        public IEnumerable<string> Traits { get; set; }
+        public IEnumerable<string>? Traits { get; set; }
 
-        public void ApplyBusinessLogic() { }
+        //public void ApplyBusinessLogic() { }
     }
 
     /// <summary>
@@ -57,12 +53,12 @@ namespace Stellar.DAL.Tests.Data
     {
         public long? AddressId { get; set; }
         public bool IsPoBox { get; set; }
-        public string Line1 { get; set; }
-        public string Line2 { get; set; }
-        public string City { get; set; }
+        public string Line1 { get; set; } = string.Empty;
+        public string Line2 { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
         public int Country { get; set; }
-        public string StateOrProvince { get; set; }
-        public string Zip { get; set; }
+        public string StateOrProvince { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
     }
@@ -76,18 +72,18 @@ namespace Stellar.DAL.Tests.Data
     public class Person : Entity
     {
         public long? PersonId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
         public byte[] PasswordSalt { get; }
         public byte[] PasswordHash { get; }
         
         [Ignore]
-        public Address Address { get; set; }
+        public Address? Address { get; set; }
         
         [Ignore]
-        public IEnumerable<string> Traits { get; set; }
+        public IEnumerable<string>? Traits { get; set; }
 
         public Person()
         {

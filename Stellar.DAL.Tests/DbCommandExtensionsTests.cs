@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Stellar.DAL.Tests.Data;
-using NUnit.Framework;
 
 namespace Stellar.DAL.Tests
 {
-    [TestFixture]
+    [Collection("Database collection")]
     public class DbCommandExtensionsTests
     {
+        readonly DatabaseFixture database;
+        
         private const string Template = "INSERT INTO {0} ({1}) VALUES({2});";
+
+        public DbCommandExtensionsTests(DatabaseFixture fixture)
+        {
+            database = fixture;
+        }
 
         /// <summary>
         /// Gets a <see cref="DbCommand"/> for testing purposes.
@@ -21,11 +23,11 @@ namespace Stellar.DAL.Tests
         /// <returns><see cref="DbCommand"/> instance.</returns>
         public DbCommand GetCommand()
         {
-            return DatabaseClient.GetCommand(@"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;").DbCommand;
+            return database.GetCommand().DbCommand;
         }
 
         #region AddParameters
-        [Test]
+        [Fact]
         public void AddParameterArray()
         {
             var command = GetCommand();
@@ -36,12 +38,12 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameters(superHeroNameParameter, alterEgoFirstNameParameter, alterEgoLastNameParameter);
 
-            Assert.That(command.Parameters[superHeroNameParameter.ParameterName].Value == superHeroNameParameter.Value);
-            Assert.That(command.Parameters[alterEgoFirstNameParameter.ParameterName].Value == alterEgoFirstNameParameter.Value);
-            Assert.That(command.Parameters[alterEgoLastNameParameter.ParameterName].Value == alterEgoLastNameParameter.Value);
+            Assert.Equal(superHeroNameParameter.Value, command.Parameters[superHeroNameParameter.ParameterName].Value);
+            Assert.Equal(alterEgoFirstNameParameter.Value, command.Parameters[alterEgoFirstNameParameter.ParameterName].Value);
+            Assert.Equal(alterEgoLastNameParameter.Value, command.Parameters[alterEgoLastNameParameter.ParameterName].Value);
         }
 
-        [Test]
+        [Fact]
         public void AddParameterList()
         {
             var command = GetCommand();
@@ -54,12 +56,12 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameters(parameterList);
 
-            Assert.That(command.Parameters[superHeroNameParameter.ParameterName].Value == superHeroNameParameter.Value);
-            Assert.That(command.Parameters[alterEgoFirstNameParameter.ParameterName].Value == alterEgoFirstNameParameter.Value);
-            Assert.That(command.Parameters[alterEgoLastNameParameter.ParameterName].Value == alterEgoLastNameParameter.Value);
+            Assert.Equal(superHeroNameParameter.Value, command.Parameters[superHeroNameParameter.ParameterName].Value);
+            Assert.Equal(alterEgoFirstNameParameter.Value, command.Parameters[alterEgoFirstNameParameter.ParameterName].Value);
+            Assert.Equal(alterEgoLastNameParameter.Value, command.Parameters[alterEgoLastNameParameter.ParameterName].Value);
         }
 
-        [Test]
+        [Fact]
         public void AddParameterDictionary()
         {
             var command = GetCommand();
@@ -68,20 +70,21 @@ namespace Stellar.DAL.Tests
             var alterEgoFirstName = new KeyValuePair<string, object>("@AlterEgoFirstName", "Clark");
             var alterEgoLastName = new KeyValuePair<string, object>("@AlterEgoLastName", "Kent");
 
-            IDictionary<string, object> dictionary = new Dictionary<string, object>();
-
-            dictionary.Add(superHeroName);
-            dictionary.Add(alterEgoFirstName);
-            dictionary.Add(alterEgoLastName);
+            IDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                { superHeroName.Key, superHeroName.Value },
+                { alterEgoFirstName.Key, alterEgoFirstName.Value },
+                { alterEgoLastName.Key, alterEgoLastName.Value }
+            };
 
             command = command.AddParameters(dictionary);
 
-            Assert.That(command.Parameters[superHeroName.Key].Value == superHeroName.Value);
-            Assert.That(command.Parameters[alterEgoFirstName.Key].Value == alterEgoFirstName.Value);
-            Assert.That(command.Parameters[alterEgoLastName.Key].Value == alterEgoLastName.Value);
+            Assert.Equal(superHeroName.Value, command.Parameters[superHeroName.Key].Value);
+            Assert.Equal(alterEgoFirstName.Value, command.Parameters[alterEgoFirstName.Key].Value);
+            Assert.Equal(alterEgoLastName.Value, command.Parameters[alterEgoLastName.Key].Value);
         }
 
-        [Test]
+        [Fact]
         public void ExpandMultivaluedParameters()
         {
             var command = GetCommand();
@@ -98,12 +101,12 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameters(parameterName, parameterList);
 
-            Assert.That(command.Parameters[parameterName + "_p0"].Value.ToString() == superman);
-            Assert.That(command.Parameters[parameterName + "_p1"].Value.ToString() == batman);
-            Assert.That(command.Parameters[parameterName + "_p2"].Value.ToString() == spiderman);
+            Assert.Equal(superman, command.Parameters[parameterName + "_p0"]?.Value?.ToString());
+            Assert.Equal(batman, command.Parameters[parameterName + "_p1"]?.Value?.ToString());
+            Assert.Equal(spiderman, command.Parameters[parameterName + "_p2"]?.Value?.ToString());
         }
 
-        [Test]
+        [Fact]
         public void ExpandMultivaluedTypedParameters()
         {
             var command = GetCommand();
@@ -121,29 +124,29 @@ namespace Stellar.DAL.Tests
             command = command.AddParameters(parameterName, parameterList, DbType.AnsiString);
 
 
-            Assert.That(command.Parameters[0].ParameterName.Contains(parameterName));
-            Assert.That(command.Parameters[0].Value.ToString() == superman);
-            Assert.That(command.Parameters[0].DbType == DbType.AnsiString);
+            Assert.Contains(parameterName, command.Parameters[0].ParameterName);
+            Assert.Equal(superman, command.Parameters[0]?.Value?.ToString());
+            Assert.Equal(DbType.AnsiString, command.Parameters[0].DbType);
 
-            Assert.That(command.Parameters[1].ParameterName.Contains(parameterName));
-            Assert.That(command.Parameters[1].Value.ToString() == batman);
-            Assert.That(command.Parameters[1].DbType == DbType.AnsiString);
+            Assert.Contains(parameterName, command.Parameters[1].ParameterName);
+            Assert.Equal(batman, command.Parameters[1]?.Value?.ToString());
+            Assert.Equal(DbType.AnsiString, command.Parameters[1].DbType);
 
-            Assert.That(command.Parameters[2].ParameterName.Contains(parameterName));
-            Assert.That(command.Parameters[2].Value.ToString() == spiderman);
-            Assert.That(command.Parameters[2].DbType == DbType.AnsiString);
+            Assert.Contains(parameterName, command.Parameters[2].ParameterName);
+            Assert.Equal(spiderman, command.Parameters[2]?.Value?.ToString());
+            Assert.Equal(DbType.AnsiString, command.Parameters[2].DbType);
 
-            Assert.That(command.CommandText.Contains("SELECT * FROM SuperHero WHERE SuperHeroName IN (@SuperHeroNames_p0,@SuperHeroNames_p1,@SuperHeroNames_p2)"));
+            Assert.Contains("SELECT * FROM SuperHero WHERE SuperHeroName IN (@SuperHeroNames_p0,@SuperHeroNames_p1,@SuperHeroNames_p2)", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void NullParameterListNameThrows()
         {
             var command = GetCommand();
 
             command.CommandText = "SELECT * FROM SuperHero WHERE SuperHeroName IN (@SuperHeroNames)";
 
-            const string parameterName = null; // Under test
+            const string? parameterName = null; // Under test
 
             const string superman = "Superman";
             const string batman = "Batman";
@@ -156,7 +159,7 @@ namespace Stellar.DAL.Tests
             Assert.Throws<ArgumentNullException>(Action);
         }
 
-        [Test]
+        [Fact]
         public void NullParameterListThrows()
         {
             var command = GetCommand();
@@ -170,7 +173,7 @@ namespace Stellar.DAL.Tests
             Assert.Throws<ArgumentNullException>(Action);
         }
 
-        [Test]
+        [Fact]
         public void EmptyParameterListThrows()
         {
             var command = GetCommand();
@@ -181,10 +184,10 @@ namespace Stellar.DAL.Tests
 
             void Action() => command.AddParameters(parameterName, new List<string>());
 
-            Assert.Catch<Exception>(Action);
+            Assert.Throws<Exception>(Action);
         }
 
-        [Test]
+        [Fact]
         public void AddingParametersBeforeSettingCommandTextThrows()
         {
             var command = GetCommand();
@@ -199,10 +202,10 @@ namespace Stellar.DAL.Tests
 
             void Action() => command.AddParameters(parameterName, parameterList);
 
-            Assert.Catch<Exception>(Action);
+            Assert.Throws<Exception>(Action);
         }
 
-        [Test]
+        [Fact]
         public void ParameterNotInCommandTextThrows()
         {
             var command = GetCommand();
@@ -219,12 +222,12 @@ namespace Stellar.DAL.Tests
 
             void Action() => command.AddParameters(parameterName, parameterList);
 
-            Assert.Catch<Exception>(Action);
+            Assert.Throws<Exception>(Action);
         }
         #endregion
 
         #region CreateParameter
-        [Test]
+        [Fact]
         public void CreateParameter1()
         {
             var command = GetCommand();
@@ -235,11 +238,11 @@ namespace Stellar.DAL.Tests
 
             var superHeroNameParameter = command.CreateParameter(parameterName, parameterValue);
 
-            Assert.That(superHeroNameParameter.ParameterName == parameterName);
-            Assert.That(superHeroNameParameter.Value == parameterValue);
+            Assert.Equal(parameterName, superHeroNameParameter.ParameterName);
+            Assert.Equal(parameterValue, superHeroNameParameter.Value);
         }
 
-        [Test]
+        [Fact]
         public void CreateParameter2()
         {
             var command = GetCommand();
@@ -252,12 +255,12 @@ namespace Stellar.DAL.Tests
 
             var superHeroNameParameter = command.CreateParameter(parameterName, parameterValue, dbType);
 
-            Assert.That(superHeroNameParameter.ParameterName == parameterName);
-            Assert.That(superHeroNameParameter.Value == parameterValue);
-            Assert.That(superHeroNameParameter.DbType == dbType);
+            Assert.Equal(parameterName, superHeroNameParameter.ParameterName);
+            Assert.Equal(parameterValue, superHeroNameParameter.Value);
+            Assert.Equal(dbType, superHeroNameParameter.DbType);
         }
 
-        [Test]
+        [Fact]
         public void CreateParameter3()
         {
             var command = GetCommand();
@@ -272,15 +275,15 @@ namespace Stellar.DAL.Tests
 
             var superHeroNameParameter = command.CreateParameter(parameterName, parameterValue, dbType, parameterDirection);
 
-            Assert.That(superHeroNameParameter.ParameterName == parameterName);
-            Assert.That(superHeroNameParameter.Value == parameterValue);
-            Assert.That(superHeroNameParameter.DbType == dbType);
-            Assert.That(superHeroNameParameter.Direction == parameterDirection);
+            Assert.Equal(parameterName, superHeroNameParameter.ParameterName);
+            Assert.Equal(parameterValue, superHeroNameParameter.Value);
+            Assert.Equal(dbType, superHeroNameParameter.DbType);
+            Assert.Equal(parameterDirection, superHeroNameParameter.Direction);
         }
         #endregion
 
         #region AddParameter
-        [Test]
+        [Fact]
         public void AddParameter()
         {
             var command = GetCommand();
@@ -292,10 +295,10 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameter(parameter);
 
-            Assert.That(command.Parameters[parameter.ParameterName].Value == parameter.Value);
+            Assert.Equal(parameter.Value, command.Parameters[parameter.ParameterName].Value);
         }
 
-        [Test]
+        [Fact]
         public void NullParameterThrows()
         {
             var command = GetCommand();
@@ -305,7 +308,7 @@ namespace Stellar.DAL.Tests
             Assert.Throws<ArgumentNullException>(Action);
         }
 
-        [Test]
+        [Fact]
         public void AddNameAndValue()
         {
             var command = GetCommand();
@@ -316,10 +319,10 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameter(parameterName, parameterValue);
 
-            Assert.That(command.Parameters[parameterName].Value == parameterValue);
+            Assert.Equal(parameterValue, command.Parameters[parameterName].Value);
         }
 
-        [Test]
+        [Fact]
         public void NullParameterNameThrows1()
         {
             var command = GetCommand();
@@ -333,7 +336,7 @@ namespace Stellar.DAL.Tests
             Assert.Throws<ArgumentNullException>(Action);
         }
 
-        [Test]
+        [Fact]
         public void AddNameAndValueAndType()
         {
             var command = GetCommand();
@@ -344,10 +347,10 @@ namespace Stellar.DAL.Tests
 
             command = command.AddParameter(parameterName, parameterValue, DbType.AnsiString);
 
-            Assert.That(command.Parameters[parameterName].Value == parameterValue);
+            Assert.Equal(parameterValue, command.Parameters[parameterName].Value);
         }
 
-        [Test]
+        [Fact]
         public void NullParameterNameThrows2()
         {
             var command = GetCommand();
@@ -363,7 +366,7 @@ namespace Stellar.DAL.Tests
         #endregion
 
         #region SetCommandText
-        [Test]
+        [Fact]
         public void SetCommandText()
         {
             const string commandText = "SELECT * FROM SuperHero";
@@ -371,10 +374,10 @@ namespace Stellar.DAL.Tests
             var command = GetCommand()
                 .SetCommandText(commandText);
 
-            Assert.That(command.CommandText == commandText);
+            Assert.Equal(commandText, command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void SetCommandTextOverwrites()
         {
             const string commandText = "SELECT * FROM SuperHero";
@@ -385,12 +388,12 @@ namespace Stellar.DAL.Tests
             command = command
                 .SetCommandText(commandText);
 
-            Assert.That(command.CommandText == commandText);
+            Assert.Equal(commandText, command.CommandText);
         }
         #endregion
 
         #region AppendCommandText
-        [Test]
+        [Fact]
         public void AppendWhenEmptySets()
         {
             const string commandText = "SELECT * FROM SuperHero";
@@ -399,10 +402,10 @@ namespace Stellar.DAL.Tests
 
             command = command.AppendCommandText(commandText);
 
-            Assert.That(command.CommandText == commandText);
+            Assert.Equal(commandText, command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void AppendAppends()
         {
             const string commandText1 = "SELECT * FROM SuperHero;";
@@ -413,199 +416,205 @@ namespace Stellar.DAL.Tests
 
             command = command.AppendCommandText(commandText2);
 
-            Assert.That(command.CommandText == commandText1 + commandText2);
+            Assert.Equal(commandText1 + commandText2, command.CommandText);
         }
         #endregion
 
         #region GenerateInsertCommand
-        [Test]
+        [Fact]
         public void GenerateInsertCommandFromObjectWithFields()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template);
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template);
 
             Assert.NotNull(command.CommandText);
-            Assert.That(command.CommandText.Contains("INSERT"));
+            Assert.Contains("INSERT", command.CommandText);
         }
 
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandFromObjectWithProperties()
         {
             var command = GetCommand()
                 .GenerateInsertCommand(Seed.Customer1, Template);
 
             Assert.NotNull(command.CommandText);
-            Assert.That(command.CommandText.Contains("INSERT"));
+            Assert.Contains("INSERT", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithTypeNameAsTableName()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template);
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template);
 
-            Assert.That(command.CommandText.Contains("Customer"));
+            Assert.Contains("Customer", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithSuppliedTableName()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template, "[Person]");
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template, "[Person]");
 
-            Assert.That(command.CommandText.Contains("[Person]"));
+            Assert.Contains("[Person]", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithParameterNamesFromObjectFields()
         {
             var command = GetCommand()
-                .GenerateInsertCommand(Seed.SCustomerWithFields, Template, "[Person]");
+                .GenerateInsertCommand(Seed.CustomerWithFields, Template, "[Person]");
 
             var parameters = command.Parameters.Cast<DbParameter>().ToList();
 
-            Assert.That(parameters.FirstOrDefault(x => x.ParameterName.Contains("@FirstName"))?.Value.ToString() == Seed.SCustomerWithFields.FirstName);
-            Assert.That(parameters.FirstOrDefault(x => x.ParameterName.Contains("@LastName"))?.Value.ToString() == Seed.SCustomerWithFields.LastName);
-            Assert.That(parameters.FirstOrDefault(x => x.ParameterName.Contains("@DateOfBirth"))?.Value.ToString() == Seed.SCustomerWithFields.DateOfBirth.ToString(CultureInfo.CurrentCulture));
+            Assert.Equal(Seed.CustomerWithFields.FirstName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@FirstName"))?.Value?.ToString());
+            Assert.Equal(Seed.CustomerWithFields.LastName, parameters.FirstOrDefault(x => x.ParameterName.Contains("@LastName"))?.Value?.ToString());
+            Assert.Equal(Seed.CustomerWithFields.DateOfBirth?.ToString(CultureInfo.CurrentCulture), parameters.FirstOrDefault(x => x.ParameterName.Contains("@DateOfBirth"))?.Value?.ToString());
 
-            Assert.That(command.CommandText.Contains("@FirstName"));
-            Assert.That(command.CommandText.Contains("@LastName"));
-            Assert.That(command.CommandText.Contains("@DateOfBirth"));
+            Assert.Contains("@FirstName", command.CommandText);
+            Assert.Contains("@LastName", command.CommandText);
+            Assert.Contains("@DateOfBirth", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithAnonymousObject()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
             command = command.GenerateInsertCommand(customer, Template, "[Person]");
 
             Assert.NotNull(command.CommandText);
-            Assert.That(command.CommandText.Contains("INSERT"));
+            Assert.Contains("INSERT", command.CommandText);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithAnonymousObjectAndNoTableNameThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
             void Action() => command.GenerateInsertCommand(customer, Template);
 
-            var exception = Assert.Catch<ArgumentNullException>(Action);
+            var exception = Assert.Throws<ArgumentNullException>(Action);
 
             Assert.NotNull(exception);
 
             Console.WriteLine(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithNullObjectThrows()
         {
             var command = GetCommand();
 
             void Action() => command.GenerateInsertCommand(null, Template);
 
-            var exception = Assert.Catch<ArgumentNullException>(Action);
+            var exception = Assert.Throws<ArgumentNullException>(Action);
 
             Assert.NotNull(exception);
 
             Console.WriteLine(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithNullTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
             void Action() => command.GenerateInsertCommand(customer, null, "[Customer]");
 
-            var exception = Assert.Catch<ArgumentNullException>(Action);
+            var exception = Assert.Throws<ArgumentNullException>(Action);
 
             Assert.NotNull(exception);
 
             Console.WriteLine(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithEmptyTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
             void Action() => command.GenerateInsertCommand(customer, "", "[Customer]");
 
-            var exception = Assert.Catch<ArgumentNullException>(Action);
+            var exception = Assert.Throws<ArgumentNullException>(Action);
 
             Assert.NotNull(exception);
 
             Console.WriteLine(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandWithInvalidTemplateThrows()
         {
-            var customer = new { Seed.SCustomerWithFields.FirstName, Seed.SCustomerWithFields.LastName, Seed.SCustomerWithFields.DateOfBirth };
+            var customer = new { Seed.CustomerWithFields.FirstName, Seed.CustomerWithFields.LastName, Seed.CustomerWithFields.DateOfBirth };
 
             var command = GetCommand();
 
             void Action() => command.GenerateInsertCommand(customer, "An_Invalid_Template{0}", "[Customer]");
 
-            var exception = Assert.Catch<Exception>(Action);
+            var exception = Assert.Throws<Exception>(Action);
 
             Assert.NotNull(exception);
 
             Console.WriteLine(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void GenerateInsertCommandDoesNotEscapeTableNameByDefault()
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand()
                 .GenerateInsertCommand(customer, Template);
 
-            Assert.That(command.CommandText.Contains($" {customer.GetType().Name} "));
+            Assert.Contains($" {customer.GetType().Name} ", command.CommandText);
         }
 
-        [TestCase(KeywordEscapeMethod.SquareBracket, '[', ']')]
-        [TestCase(KeywordEscapeMethod.Backtick, '`', '`')]
-        [TestCase(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
+        [Theory]
+        [InlineData(KeywordEscapeMethod.SquareBracket, '[', ']')]
+        [InlineData(KeywordEscapeMethod.Backtick, '`', '`')]
+        [InlineData(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
         public void GenerateInsertCommandEscapesTableName(KeywordEscapeMethod keywordEscapeMethod, char prefix, char suffix)
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand()
                 .GenerateInsertCommand(customer, Template, null, keywordEscapeMethod);
 
-            Assert.That(command.CommandText.Contains($" {prefix}{customer.GetType().Name}{suffix} "));
+            Assert.Contains($" {prefix}{customer.GetType().Name}{suffix} ", command.CommandText);
         }
 
-        [TestCase(KeywordEscapeMethod.SquareBracket, '[', ']')]
-        [TestCase(KeywordEscapeMethod.Backtick, '`', '`')]
-        [TestCase(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
+        [Theory]
+        [InlineData(KeywordEscapeMethod.SquareBracket, '[', ']')]
+        [InlineData(KeywordEscapeMethod.Backtick, '`', '`')]
+        [InlineData(KeywordEscapeMethod.DoubleQuote, '\"', '\"')]
         public void GenerateInsertCommandEscapesColumnNames(KeywordEscapeMethod keywordEscapeMethod, char prefix, char suffix)
         {
-            var customer = Seed.SCustomerWithFields;
+            var customer = Seed.CustomerWithFields;
 
             var command = GetCommand();
 
             command = command.GenerateInsertCommand(customer, Template, null, keywordEscapeMethod);
 
-            Assert.That(command.CommandText.Contains($"{prefix}FirstName{suffix}"));
-            Assert.That(command.CommandText.Contains($"{prefix}LastName{suffix}"));
-            Assert.That(command.CommandText.Contains($"{prefix}DateOfBirth{suffix}"));
+            Assert.Contains($"{prefix}FirstName{suffix}", command.CommandText);
+            Assert.Contains($"{prefix}LastName{suffix}", command.CommandText);
+            Assert.Contains($"{prefix}DateOfBirth{suffix}", command.CommandText);
         }
 
-        [Test(Description = "Typical DDD test--the command is generated but it won't fly :)")]
+
+        /// <remarks>
+        /// The command generated won't fly
+        /// </remarks>
+        [Fact]
         public void GenerateInsertCommandForObjectWithoutFields()
         {
             var customer = new CustomerWithoutFields();
@@ -615,14 +624,15 @@ namespace Stellar.DAL.Tests
             command = command.GenerateInsertCommand(customer, Template);
 
             Assert.NotNull(command.CommandText);
-            Assert.That(command.CommandText == $"INSERT INTO {customer.GetType().Name} () VALUES();");
+            Assert.Equal($"INSERT INTO {customer.GetType().Name} () VALUES();", command.CommandText);
         }
         #endregion
 
         #region Generate SQL Server Inserts
-        [TestCase("Customer")]
-        [TestCase("[Customer]")]
-        [TestCase(null)]
+        [Theory]
+        [InlineData("Customer")]
+        [InlineData("[Customer]")]
+        [InlineData(null)]
         public void GenerateInsertsForSqlServer(string table)
         {
             var customers = Seed.Customers.ToList();
@@ -631,15 +641,15 @@ namespace Stellar.DAL.Tests
                 .GenerateInsertsForSqlServer(customers, table);
 
             Assert.NotNull(command.CommandText);
-            Assert.That(command.CommandText.Contains("INSERT"));
-            Assert.That(command.CommandText.Contains("OUTPUT Inserted.*"));
-            Assert.That(Regex.IsMatch(command.CommandText, " [[]?Customer"));
-            Assert.That(command.CommandText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length == customers.Count);
+            Assert.Contains("INSERT", command.CommandText);
+            Assert.Contains("OUTPUT Inserted.*", command.CommandText);
+            Assert.Matches(" [[]?Customer", command.CommandText);
+            Assert.Equal(customers.Count, command.CommandText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length);
         }
         #endregion
 
         #region SetCommandTimeout
-        [Test]
+        [Fact]
         public void SetCommandTimeout()
         {
             const int commandTimeoutInSeconds = 60;
@@ -647,20 +657,21 @@ namespace Stellar.DAL.Tests
             var command = GetCommand()
                 .SetCommandTimeout(commandTimeoutInSeconds);
 
-            Assert.That(command.CommandTimeout == commandTimeoutInSeconds);
+            Assert.Equal(commandTimeoutInSeconds, command.CommandTimeout);
         }
         #endregion
 
         #region SetCommandType
-        [TestCase(CommandType.Text)]
-        [TestCase(CommandType.StoredProcedure)]
-        [TestCase(CommandType.TableDirect, IgnoreReason = "not supported by the .Net Framework SqlClient Data Provider.")]
+        [Theory]
+        [InlineData(CommandType.Text)]
+        [InlineData(CommandType.StoredProcedure)]
+        [InlineData(CommandType.TableDirect, Skip = "not supported by the .Net Framework SqlClient Data Provider.")]
         public void SetCommandType(CommandType commandType)
         {
             var command = GetCommand()
                 .SetCommandType(commandType);
 
-            Assert.That(command.CommandType == commandType);
+            Assert.Equal(commandType, command.CommandType);
         }
         #endregion
     }

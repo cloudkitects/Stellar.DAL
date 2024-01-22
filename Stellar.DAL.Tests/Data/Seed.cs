@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
 
 namespace Stellar.DAL.Tests.Data
 {
     public class Seed
     {
         private static List<Person>[] PersonGroups { get; } = new List<Person>[2];
-        public static List<Person> Persons0 => PersonGroups[0];
-        public static List<Person> Persons1 => PersonGroups[1];
 
         static Seed()
         {
-            LoadPersons(@"Data\persons1.csv");
+            LoadPersonGroups(@"Data\persons1.csv");
         }
 
-        private static void LoadPersons(string path)
+        private static void LoadPersonGroups(string path)
         {
             PersonGroups[0] = new List<Person>();
             PersonGroups[1] = new List<Person>();
@@ -54,7 +50,7 @@ namespace Stellar.DAL.Tests.Data
         }
 
         #region customer
-        public static CustomerWithFields SCustomerWithFields = new()
+        public static CustomerWithFields CustomerWithFields = new()
         {
             FirstName = "Clark",
             LastName = "Kent",
@@ -82,7 +78,7 @@ namespace Stellar.DAL.Tests.Data
             DateOfBirth = DateTime.Parse("08/18/1962")
         };
 
-        public static CustomerModel CustomerWithTraits = new()
+        public static CustomerWithTraits CustomerWithTraits = new()
         {
             FirstName = Customer1.FirstName,
             LastName = Customer1.LastName,
@@ -90,15 +86,14 @@ namespace Stellar.DAL.Tests.Data
             Traits = new List<string>
             {
                 "flight",
-                "super-strength",
+                "super strength",
                 "invulnerability",
-                "super-speed",
-                "vision powers"
+                "super speed",
+                "laser eyes"
             }
         };
 
-        public static IEnumerable<Customer> Customers
-        {
+        public static IEnumerable<Customer> Customers {
             get
             {
                 yield return Customer1;
@@ -155,15 +150,47 @@ namespace Stellar.DAL.Tests.Data
             }
         };
 
-        public static IEnumerable<Person> Persons
+        public class Persons : IEnumerable<object[]>
         {
-            get
+            public IEnumerator<object[]> GetEnumerator()
             {
-                yield return Superman;
-                yield return Batman;
-                yield return Spiderman;
+                yield return new object[] { Superman };
+                yield return new object[] { Batman };
+                yield return new object[] { Spiderman };
             }
+            
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-        #endregion
+
+        public class Persons0 : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                var enumerator = PersonGroups[0].GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    yield return new object[]{ enumerator.Current };
+                }
+            }
+            
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public class Persons1 : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                var enumerator = PersonGroups[1].GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    yield return new object[]{ enumerator.Current };
+                }
+            }
+            
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
     }
+    #endregion
 }

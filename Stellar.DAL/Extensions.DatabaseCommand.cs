@@ -364,9 +364,24 @@ namespace Stellar.DAL
         /// <param name="item">Object to generate the SQL INSERT statement from.</param>
         /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
         /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-        public static DatabaseCommand GenerateInsertForSqlServer(this DatabaseCommand databaseCommand, object item, string table = null)
+        public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand databaseCommand, object item, string table = null)
         {
-            databaseCommand.DbCommand.GenerateInsertForSqlServer(item, table);
+            databaseCommand.DbCommand.GenerateSqlServerInsert(item, table);
+
+            return databaseCommand;
+        }
+
+        /// <summary>
+        /// Generates a parameterized SQL Server INSERT statement from the given object and adds it to the
+        /// <see cref="DatabaseCommand" />.
+        /// </summary>
+        /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
+        /// <param name="item">Object to generate the SQL INSERT statement from.</param>
+        /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
+        /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
+        public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand databaseCommand, object item, string table = null)
+        {
+            databaseCommand.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
 
             return databaseCommand;
         }
@@ -590,15 +605,13 @@ namespace Stellar.DAL
         /// </param>
         /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
         /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
-        public static List<T> ExecuteToMap<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
+        public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
         {
             var list = new List<T>();
 
-            databaseCommand.ExecuteReader(reader =>
+            databaseCommand.ExecuteReader(callback =>
             {
-                var mappedObject = mapper.Invoke(reader);
-
-                list.Add(mappedObject);
+                list.Add(mapper.Invoke(callback));
             }, keepConnectionOpen);
 
             return list;
@@ -613,16 +626,21 @@ namespace Stellar.DAL
         /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
         public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
         {
-            return databaseCommand.ExecuteToMap(DataRecordMapper.Map<T>, keepConnectionOpen);
+            return databaseCommand.ExecuteToList(ToObject<T>, keepConnectionOpen);
         }
 
         /// <summary>
-        /// Executes a statement against a database and maps matching column names to a type of <typeparamref name="T" />.
+        /// Executes a statement against a database and maps the results to an object of type <typeparamref name="T" />
+        /// using a given <paramref name="mapper" /> function.
         /// </summary>
         /// <typeparam name="T">The type to map the results to.</typeparam>
         /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
+        /// <param name="mapper">
+        /// A method that takes an <see cref="IDataRecord" /> as an argument and returns an instance of type
+        /// <typeparamref name="T" />.
+        /// </param>
         /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-        /// <returns>Results mapped to a type of <typeparamref name="T" />.</returns>
+        /// <returns>An object of type <typeparamref name="T" />.</returns>
         public static T ExecuteToObject<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false) where T : new()
         {
             return databaseCommand.ExecuteToList<T>(keepConnectionOpen).FirstOrDefault();
@@ -634,7 +652,7 @@ namespace Stellar.DAL
         /// <returns>Results mapped to a list of type dynamic.</returns>
         public static List<dynamic> ExecuteToDynamicList(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
         {
-            return databaseCommand.ExecuteToMap(DataRecordMapper.MapDynamic, keepConnectionOpen);
+            return databaseCommand.ExecuteToList(ToDynamic, keepConnectionOpen);
         }
 
         /// <summary>Executes a statement against a database and maps the result to a dynamic object.</summary>
@@ -663,11 +681,9 @@ namespace Stellar.DAL
 
                 var dbProviderFactory = DbProviderFactories.GetFactory(databaseCommand.DbCommand.Connection);
 
-                var dataAdapter = dbProviderFactory.CreateDataAdapter();
-
-                if (dataAdapter == null)
+                var dataAdapter = dbProviderFactory.CreateDataAdapter() ??
                     throw new Exception("An unexpected null was returned from a call to DbProviderFactory.CreateDataAdapter().");
-
+                
                 dataAdapter.SelectCommand = databaseCommand.DbCommand;
 
                 dataAdapter.Fill(dataSet);

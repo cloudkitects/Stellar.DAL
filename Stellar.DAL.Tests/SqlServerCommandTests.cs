@@ -1,43 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
 using System.Transactions;
 
-using NUnit.Framework;
 using Stellar.DAL.Model;
 using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
-    [TestFixture]
-    public class SqlServerCommandTests : DatabaseIntegrationTests
+    [Collection("Database collection")]
+    public class SqlServerCommandTests
     {
-        public SqlServerCommandTests()
+        readonly DatabaseFixture database;
+
+        public SqlServerCommandTests(DatabaseFixture fixture)
         {
-            GetCommand()
-                .SetCommandText(@$"BULK INSERT Person FROM '{Directory.GetCurrentDirectory()}\Data\persons2.tsv';")
-                .ExecuteNonQuery();
-            
-            GetCommand()
-                .SetCommandText(@$"BULK INSERT [Address] FROM '{Directory.GetCurrentDirectory()}\Data\Addresses.tsv';")
-                .ExecuteNonQuery();
+            database = fixture;
         }
 
         #region GetDebugCommandObject
-        [Test]
+        [Fact]
         public void GetDebugCommandText()
         {
             var customers = Seed.Customers.ToList();
 
-            var command = GetCommand().GenerateInsertsForSqlServer(customers);
+            var command = database.GetCommand().GenerateInsertsForSqlServer(customers);
 
             var debugInfo = command.GetDebugInfo();
 
-            Assert.That(debugInfo.CommandParameterCount >= 3);
-            Assert.AreEqual(ConnectionState.Closed, debugInfo.ConnectionState);
+            Assert.True(debugInfo.CommandParameterCount >= 3);
+            Assert.Equal(ConnectionState.Closed, debugInfo.ConnectionState);
         }
         #endregion
 
@@ -45,89 +36,89 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Execute round-trip DML.
         /// </summary>
-        [Test]
+        [Fact]
         public void ExecuteToList()
         {
             var customers = Seed.Customers.ToList();
 
-            var command = GetCommand().GenerateInsertsForSqlServer(customers);
+            var command = database.GetCommand().GenerateInsertsForSqlServer(customers);
 
             var result = command.ExecuteToList<Customer>();
 
-            Assert.AreEqual(customers.Count, result.Count);
+            Assert.Equal(customers.Count, result.Count);
 
-            Assert.AreEqual(customers[0].FirstName, result[0].FirstName);
-            Assert.AreEqual(customers[1].LastName, result[1].LastName);
-            Assert.AreEqual(customers[2].DateOfBirth, result[2].DateOfBirth);
+            Assert.Equal(customers[0].FirstName, result[0].FirstName);
+            Assert.Equal(customers[1].LastName, result[1].LastName);
+            Assert.Equal(customers[2].DateOfBirth, result[2].DateOfBirth);
 
-            Assert.That(result.All(r => !r.IdIsNullOrEmpty()));
+            Assert.True(result.All(r => !r.IdIsNullOrEmpty()));
         }
         #endregion
 
         #region ExecuteScalar
-        [Test]
+        [Fact]
         public void GenericExecuteScalarReturnsTheFirstValue()
         {
-            var id = GetCommand()
+            var id = database.GetCommand()
                 .SetCommandText("SELECT TOP(1) Id, FirstName FROM Customer;")
                 .ExecuteScalar<Guid>();
 
-            Assert.NotNull(id);
+            Assert.NotEqual(Guid.Empty, id);
         }
 
-        [Test]
+        [Fact]
         public void ExecuteScalarNullsTheDbCommand()
         {
-            var command = GetCommand()
+            var command = database.GetCommand()
                 .SetCommandText("SELECT * FROM Customer;");
 
             command.ExecuteScalar();
 
-            Assert.IsNull(command.DbCommand);
+            Assert.Null(command.DbCommand);
         }
 
-        [Test]
+        [Fact]
         public void ExecuteScalarKeepsTheConnectionOpen()
         {
-            var command = GetCommand()
+            var command = database.GetCommand()
                 .SetCommandText("SELECT * FROM Customer;");
 
             command.ExecuteScalar(true);
 
-            Assert.That(command.DbCommand.Connection.State == ConnectionState.Open);
+            Assert.Equal(ConnectionState.Open, command.DbCommand?.Connection?.State);
 
             command.Dispose();
         }
 
-        [Test]
+        [Fact]
         public void ExecuteScalarCallsPreExecuteHandler()
         {
             var handlerCalled = false;
 
             EventHandlers.DatabaseCommandPreExecuteEventHandlers.Add(_ => handlerCalled = true);
 
-            GetCommand()
+            database.GetCommand()
                 .SetCommandText("SELECT 1")
                 .ExecuteScalar();
 
-            Assert.IsTrue(handlerCalled);
+            Assert.True(handlerCalled);
         }
 
-        [Test]
+        [Fact]
         public void ExecuteScalarCallsPostExecuteHandler()
         {
             var handlerCalled = false;
 
             EventHandlers.DatabaseCommandPostExecuteEventHandlers.Add(_ => handlerCalled = true);
 
-            GetCommand()
+            database.GetCommand()
                 .SetCommandText("SELECT 1")
                 .ExecuteScalar();
 
-            Assert.IsTrue(handlerCalled);
+            Assert.True(handlerCalled);
         }
 
-        [Test]
+        [Fact]
         public void ExecuteScalarCallsUnhandledExceptionHandler()
         {
             var handlerCalled = false;
@@ -138,12 +129,12 @@ namespace Stellar.DAL.Tests
             });
 
             void Action() =>
-                GetCommand()
+                database.GetCommand()
                     .SetCommandText("bogus SQL statement;")
                     .ExecuteScalar();
 
             Assert.Throws<SqlException>(Action);
-            Assert.IsTrue(handlerCalled);
+            Assert.True(handlerCalled);
         }
         #endregion
 
@@ -151,24 +142,24 @@ namespace Stellar.DAL.Tests
         /// <summary>
         /// Test for the OUTPUT Inserted.* clause.
         /// </summary>
-        [Test]
+        [Fact]
         public void InsertAndExecuteToObject()
         {
             var customer = TestHelpers.Map<Customer>(Seed.CustomerWithTraits);
 
-            var command = GetCommand();
+            var command = database.GetCommand();
 
-            command.GenerateInsertForSqlServer(customer, "Customer");
+            command.GenerateSqlServerInsertWithOutput(customer, "Customer");
 
-            var customerModel = command.ExecuteToObject<CustomerModel>();
+            var customerModel = command.ExecuteToObject<CustomerWithTraits>();
 
-            Assert.That(customerModel != null);
+            Assert.NotNull(customerModel);
         }
 
         /// <summary>
         /// Execute round-trip DML.
         /// </summary>
-        [Test]
+        [Fact]
         public void InsertAndExecuteToList()
         {
             using var scope = new TransactionScope();
@@ -180,14 +171,14 @@ namespace Stellar.DAL.Tests
                 Seed.Customer2
             };
 
-            var command = GetCommand()
+            var command = database.GetCommand()
                 .GenerateInsertsForSqlServer(customers);
                 
-            var models = command.ExecuteToList<CustomerModel>();
+            var models = command.ExecuteToList<CustomerWithTraits>();
 
-            Assert.AreEqual(customers[0].FirstName, models[0].FirstName);
-            Assert.AreEqual(customers[1].LastName, models[1].LastName);
-            Assert.AreEqual(customers[2].DateOfBirth, models[2].DateOfBirth);
+            Assert.Equal(customers[0].FirstName, models[0].FirstName);
+            Assert.Equal(customers[1].LastName, models[1].LastName);
+            Assert.Equal(customers[2].DateOfBirth, models[2].DateOfBirth);
         }
         #endregion
 
@@ -206,15 +197,15 @@ namespace Stellar.DAL.Tests
         /// CQS does not apply to REST APIs: POST, PUT, and DELETE verbs imply the intention to change the state, yet HTTP
         /// demands returning proper responses, thus violating "pure" CQS, even if it only responds "OK".
         /// </remarks>
-        [TestCaseSource(typeof(Seed), nameof(Seed.Persons)), Parallelizable]
+        [Theory]
+        [ClassData(typeof(Seed.Persons))]
         public void SaveModelBottomUp1(Person person)
         {
-            var addressId = SavedId(person.Address);
+            var addressId = database.SavedId(person.Address);
 
-            var rowsAffected = Save(person
-                .ExtendWith("AddressId", addressId));
+            var rowsAffected = database.Insert(person.ExtendWith("AddressId", addressId));
 
-            Assert.That(rowsAffected > 0);
+            Assert.True(rowsAffected > 0);
         }
 
         /// <summary>
@@ -222,75 +213,82 @@ namespace Stellar.DAL.Tests
         /// using fluent syntax and getting it back with
         /// composite Ids.
         /// </summary>
-        [TestCaseSource(typeof(Seed), nameof(Seed.Persons0)), Parallelizable]
+        [Theory]
+        [ClassData(typeof(Seed.Persons0))]
         public void SaveModelBottomUp2(Person person)
         {
-            var result = GetInsertCommand(person
-                    .ExtendWith("AddressId", SavedId(person.Address)))
+            var result = database.GetInsertCommand(person
+                    .ExtendWith("AddressId", database.SavedId(person.Address)))
                 .ExecuteToObject<Person>();
 
+            // sad state of affairs if we cannot encapsulate composition.
             result.Address = person.Address;
 
-            Assert.NotNull(result.Id);
-            Assert.NotNull(result.Address.Id);
-            
-            Assert.AreEqual(person.FirstName, result.FirstName);
-            Assert.AreEqual(person.LastName, result.LastName);
-            Assert.AreEqual(person.Email, result.Email);
-            Assert.AreEqual(person.Phone, result.Phone);
-            Assert.AreEqual(person.Address.City, result.Address.City);
+            Assert.Equal(person.FirstName, result.FirstName);
+            Assert.Equal(person.LastName, result.LastName);
+            Assert.Equal(person.Email, result.Email);
+            Assert.Equal(person.Phone, result.Phone);
+            Assert.Equal(person.Address?.City, result.Address?.City);
         }
 
         /// <summary>
         /// Save a model from the top down (root first)
         /// using fluent syntax and getting it back.
         /// </summary>
-        [TestCaseSource(typeof(Seed), nameof(Seed.Persons1)), Parallelizable]
+        [Theory]
+        [ClassData(typeof(Seed.Persons1))]
         public void SaveModelTopDown(Person model)
         {
             var person = TestHelpers.Map<Person>(model);
 
-            var personModel = GetInsertCommand(person)
+            var personModel = database.GetInsertCommand(person)
                 .ExecuteToObject<Person>();
 
             personModel.Address = model.Address;
             
-            var addressId = SavedId(model.Address);
+            var addressId = database.SavedId(model.Address);
 
-            var id = GetCommand()
+            _ = database.GetCommand()
                 .SetCommandText("UPDATE Person SET AddressId = @AddressId OUTPUT Inserted.Id WHERE PersonId = @PersonId")
                 .AddParameter("@AddressId", addressId)
                 .AddParameter(@"PersonId", personModel.PersonId)
                 .ExecuteScalar<Guid>();
 
-            Assert.NotNull(id);
-            Assert.AreEqual(model.LastName, personModel.LastName);
-            Assert.AreEqual(model.Email, personModel.Email);
-            Assert.AreEqual(model.Phone, personModel.Phone);
-            Assert.AreEqual(model.Address.City, personModel.Address.City);
+            Assert.Equal(model.LastName, personModel.LastName);
+            Assert.Equal(model.Email, personModel.Email);
+            Assert.Equal(model.Phone, personModel.Phone);
+            Assert.Equal(model.Address?.City, personModel.Address?.City);
         }
 
         /// <summary>
         /// Get an object out.
         /// </summary>
-        [Test]
-        public void GetModel([Random(1L, 2500L, 2500)] long personId)
+        [Theory]
+        [InlineData(7, "Malissia", "Haxbie", "33758 Pearson Hill", "Guadalupe")]
+        [InlineData(290, "Sashenka", "Trebble", "49378 Tennyson Pass", "President Roxas")]
+        [InlineData(2421, "Johanna", "Salzburger", "4273 Montana Lane", "Shaami-Yurt")]
+        public void GetsModel(long personId, string first, string last, string line1, string city)
         {
-            var personModel = GetSelectByIdCommand("Person", personId)
+            var person = database.GetSelectByIdCommand("Person", personId)
                 .ExecuteToObject<Person>();
 
-            personModel.Address = GetSelectByIdCommand("Address", personId)
+            person.Address = database.GetSelectByIdCommand("Address", personId)
                 .ExecuteToObject<Address>();
             
-            Assert.NotNull(personModel);
-            Assert.NotNull(personModel.Address);
+            Assert.NotNull(person);
+            Assert.NotNull(person.Address);
+
+            Assert.Equal(first, person.FirstName);
+            Assert.Equal(last, person.LastName);
+            Assert.Equal(line1, person.Address.Line1);
+            Assert.Equal(city, person.Address?.City);
         }
 
-        [Test]
-        public void Delete()
-        {
+        //[Fact]
+        //public void Delete()
+        //{
 
-        }
+        //}
         #endregion
     }
 }
