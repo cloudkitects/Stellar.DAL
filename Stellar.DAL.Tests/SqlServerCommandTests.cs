@@ -7,12 +7,12 @@ using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
-    [Collection("Database collection")]
+    [Collection("Local Database collection")]
     public class SqlServerCommandTests
     {
-        readonly DatabaseFixture database;
+        readonly LocalDatabaseFixture database;
 
-        public SqlServerCommandTests(DatabaseFixture fixture)
+        public SqlServerCommandTests(LocalDatabaseFixture fixture)
         {
             database = fixture;
         }

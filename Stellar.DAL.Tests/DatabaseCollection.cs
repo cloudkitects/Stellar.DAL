@@ -1,9 +1,17 @@
 ﻿namespace Stellar.DAL.Tests;
 
-[CollectionDefinition("Database collection")]
-public class DatabaseCollection : ICollectionFixture<DatabaseFixture>
+/// <summary>
+/// These classes have no code, and are never created. They are
+/// a placeholder for [CollectionDefinition] and inherit all 
+/// ICollectionFixture<> interfaces.
+/// </summary>
+
+[CollectionDefinition("Local Database collection")]
+public class LocalDatabaseCollection : ICollectionFixture<LocalDatabaseFixture>
 {
-    // This class has no code, and is never created. Its purpose is simply
-    // to be the place to apply [CollectionDefinition] and all the
-    // ICollectionFixture<> interfaces.
+}
+
+[CollectionDefinition("Remote Database collection")]
+public class RemoteDatabaseCollection : ICollectionFixture<RemoteDatabaseFixture>
+{
 }

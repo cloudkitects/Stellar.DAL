@@ -5,14 +5,14 @@ using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests
 {
-    [Collection("Database collection")]
+    [Collection("Local Database collection")]
     public class DbCommandExtensionsTests
     {
-        readonly DatabaseFixture database;
+        readonly LocalDatabaseFixture database;
         
         private const string Template = "INSERT INTO {0} ({1}) VALUES({2});";
 
-        public DbCommandExtensionsTests(DatabaseFixture fixture)
+        public DbCommandExtensionsTests(LocalDatabaseFixture fixture)
         {
             database = fixture;
         }

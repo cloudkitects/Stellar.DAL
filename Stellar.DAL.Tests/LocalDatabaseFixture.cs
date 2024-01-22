@@ -1,12 +1,12 @@
 ﻿namespace Stellar.DAL.Tests;
 
-public class DatabaseFixture : IDisposable
+public class LocalDatabaseFixture : IDisposable
 {
     private readonly string _connectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;";
 
     private readonly string _database = TestHelpers.TestDbName();
 
-    public DatabaseFixture()
+    public LocalDatabaseFixture()
     {
         var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteNonQuery(sql1);
         var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", _database); ExecuteNonQuery(sql2);
