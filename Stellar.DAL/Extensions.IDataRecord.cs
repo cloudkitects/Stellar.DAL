@@ -120,35 +120,27 @@ namespace Stellar.DAL
         }
 
         /// <summary>Exception thrown when setting a fields value.</summary>
+        /// <remarks>Instantiates a new <see cref="FieldSetValueException" /> with a specified error message.</remarks>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">
+        /// The exception that is the cause of the current exception, or a null reference if no inner
+        /// exception is specified.
+        /// </param>
         [Serializable]
-        public class FieldSetValueException : Exception
+        public class FieldSetValueException(string message, Exception innerException) : Exception(message, innerException)
         {
-            /// <summary>Instantiates a new <see cref="FieldSetValueException" /> with a specified error message.</summary>
-            /// <param name="message">The message that describes the error.</param>
-            /// <param name="innerException">
-            /// The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner
-            /// exception is specified.
-            /// </param>
-            public FieldSetValueException(string message, Exception innerException)
-                : base(message, innerException)
-            {
-            }
         }
 
         /// <summary>Exception thrown when setting a properties value.</summary>
+        /// <remarks>Instantiates a new <see cref="PropertySetValueException" /> with a specified error message.</remarks>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">
+        /// The exception that is the cause of the current exception, or a null reference if no inner
+        /// exception is specified.
+        /// </param>
         [Serializable]
-        public class PropertySetValueException : Exception
+        public class PropertySetValueException(string message, Exception innerException) : Exception(message, innerException)
         {
-            /// <summary>Instantiates a new <see cref="PropertySetValueException" /> with a specified error message.</summary>
-            /// <param name="message">The message that describes the error.</param>
-            /// <param name="innerException">
-            /// The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner
-            /// exception is specified.
-            /// </param>
-            public PropertySetValueException(string message, Exception innerException)
-                : base(message, innerException)
-            {
-            }
         }
     }
 }
