@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using System.Data.Odbc;
 using System.Data.SqlClient;
 using System.Runtime.CompilerServices;
 
@@ -9,16 +10,39 @@ namespace Stellar.DAL
     /// <summary>
     /// Wrapper class for this library.
     /// </summary>
-    public static class DatabaseClient
+    public class DatabaseClient(string connectionString, Rdbms rdbms = Rdbms.SqlServer, string accessToken = null)
     {
+        
         #region Create Connection
-        /// <summary>Creates a <see cref="DbConnection" />.</summary>
-        /// <param name="connectionString">Connection string.</param>
-        /// <param name="accessToken">Optional access token.</param>
+        /// <summary>Creates a <see cref="DbConnection" of the specified subtype />.</summary>
         /// <returns>A new <see cref="DbConnection" /> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
-        /// <exception cref="Exception">An unknown error occurred creating a connection</exception>
-        public static DbConnection CreateConnection(string connectionString, string accessToken = null)
+        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
+        public DbConnection CreateConnection()
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException(nameof(connectionString));
+            }
+
+            return rdbms switch
+            {
+                Rdbms.Odbc => CreateOdbcConnection(),
+                Rdbms.SqlServer => CreateSqlConnection(),
+
+                Rdbms.MySql => throw new NotImplementedException(),
+                Rdbms.SQLite => throw new NotImplementedException(),
+                Rdbms.Postgres => throw new NotImplementedException(),
+         
+                _ => throw new NotImplementedException()
+            };
+        }
+
+        /// <summary>Creates a <see cref="SqlConnection" />.</summary>
+        /// <returns>A new <see cref="DbConnection" /> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
+        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
+        public DbConnection CreateSqlConnection()
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {
@@ -29,8 +53,32 @@ namespace Stellar.DAL
             {
                 AccessToken = accessToken,
                 ConnectionString = connectionString
-            } ?? throw new Exception("Unable to create a System.Data.SqlClient.SqlConnection with the provided values.");
+            } ?? throw new Exception($"Unable to create a {typeof(SqlConnection)} with the provided values.");
             
+            // TODO: why?
+            connection.ConnectionString = connectionString;
+
+            return connection;
+        }
+
+        /// <summary>Creates a <see cref="OdbcConnection" />.</summary>
+        /// <returns>A new <see cref="DbConnection" /> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
+        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
+        public DbConnection CreateOdbcConnection()
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException(nameof(connectionString));
+            }
+
+            var connection = new OdbcConnection
+            {
+                ConnectionString = connectionString,
+                
+            } ?? throw new Exception($"Unable to create a {typeof(OdbcConnection)} with the provided values.");
+            
+            // TODO: why, again?
             connection.ConnectionString = connectionString;
 
             return connection;
@@ -56,7 +104,6 @@ namespace Stellar.DAL
         }
 
         /// <summary>Attempts to get a <see cref="DatabaseCommand" /> using several strategies.</summary>
-        /// <param name="connectionString"></param>
         /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
         /// <exception cref="Exception">
         /// Thrown when no ConnectionString could be found. A valid ConnectionString or Connection String Name must be supplied in
@@ -73,9 +120,9 @@ namespace Stellar.DAL
         /// <exception cref="DatabaseCommand">
         /// An unknown error occurred creating a connection as the call to DbProviderFactory.CreateConnection() returned null.
         /// </exception>
-        public static DatabaseCommand GetCommand(string connectionString = null)
+        public DatabaseCommand GetCommand()
         {
-            return new(CreateConnection(connectionString));
+            return new(CreateConnection());
         }
         #endregion
     }

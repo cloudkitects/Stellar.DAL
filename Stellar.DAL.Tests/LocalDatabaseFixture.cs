@@ -37,7 +37,7 @@ public class LocalDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return DatabaseClient.GetCommand(_connectionString);
+        return new DatabaseClient(_connectionString).GetCommand();
     }
 
     public long ExecuteNonQuery(string sql)

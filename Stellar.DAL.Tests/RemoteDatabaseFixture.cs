@@ -33,9 +33,8 @@ public class RemoteDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return DatabaseClient
-            .CreateConnection(_connectionString, GetToken().Result)
-            .CreateCommand().ToDatabaseCommand();
+        return new DatabaseClient(_connectionString, accessToken: GetToken().Result)
+            .GetCommand();
     }
     #endregion
 }
