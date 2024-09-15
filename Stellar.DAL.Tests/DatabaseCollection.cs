@@ -7,7 +7,7 @@
 /// </summary>
 
 [CollectionDefinition("Local Database collection")]
-public class LocalDatabaseCollection : ICollectionFixture<LocalDatabaseFixture>
+public class LocalDatabaseCollection : ICollectionFixture<LocalSqlDatabaseFixture>
 {
 }
 

@@ -6,5 +6,6 @@ public enum Rdbms
     Odbc,
     MySql,
     SQLite,
-    Postgres
+    Postgres,
+    Snowflake
 }

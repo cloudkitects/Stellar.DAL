@@ -31,7 +31,9 @@ public class DatabaseCommand : IDisposable
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="dbConnection" /> parameter is null.</exception>
     public DatabaseCommand(DbConnection dbConnection)
     {
-        DbCommand = (dbConnection ?? throw new ArgumentNullException(nameof(dbConnection))).CreateCommand();
+        ArgumentNullException.ThrowIfNull(dbConnection);
+
+        DbCommand = dbConnection.CreateCommand();
     }
     #endregion
 

@@ -1,12 +1,14 @@
-﻿namespace Stellar.DAL.Tests;
+﻿using System.Data.SqlClient;
 
-public class LocalDatabaseFixture : IDisposable
+namespace Stellar.DAL.Tests;
+
+public class LocalSqlDatabaseFixture : IDisposable
 {
     private readonly string _connectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;";
 
     private readonly string _database = TestHelpers.TestDbName();
 
-    public LocalDatabaseFixture()
+    public LocalSqlDatabaseFixture()
     {
         var sql1 = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteNonQuery(sql1);
         var sql2 = TestHelpers.ParseSqlFile(@"Data\CreateDatabase.sql", _database); ExecuteNonQuery(sql2);
@@ -37,7 +39,7 @@ public class LocalDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return new DatabaseClient(_connectionString).GetCommand();
+        return new DbClient<SqlConnection>(_connectionString).GetCommand();
     }
 
     public long ExecuteNonQuery(string sql)

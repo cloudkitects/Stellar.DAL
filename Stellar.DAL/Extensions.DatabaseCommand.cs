@@ -752,10 +752,7 @@ namespace Stellar.DAL
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="databaseCommand" /> parameter is null.</exception>
         public static DbCommand ToDbCommand(this DatabaseCommand databaseCommand)
         {
-            if (databaseCommand == null)
-            {
-                throw new ArgumentNullException(nameof(databaseCommand));
-            }
+            ArgumentNullException.ThrowIfNull(databaseCommand);
 
             return databaseCommand.DbCommand;
         }
