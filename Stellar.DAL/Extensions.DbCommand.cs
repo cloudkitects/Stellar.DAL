@@ -9,7 +9,7 @@ namespace Stellar.DAL;
 
 public static partial class Extensions
 {
-    #region Select templates
+    #region select templates
     /// <summary>
     /// The SQL Server SELECT command template.
     /// </summary>
@@ -21,7 +21,7 @@ public static partial class Extensions
     private static readonly string SqlServerSelectByIdTemplate = @$"SELECT * FROM {{0}} WHERE ({{1}}Id = @{{1}}Id);";
     #endregion
 
-    #region Set properties
+    #region fluent property setters
     /// <summary>Sets the text command to run against the data source.</summary>
     /// <param name="command"><see cref="DbCommand" /> instance.</param>
     /// <param name="text">The text command to run against the data source.</param>
@@ -69,7 +69,7 @@ public static partial class Extensions
     }
     #endregion
 
-    #region Parameters
+    #region parameter helpers
     /// <summary>Creates a <see cref="DbParameter" />.</summary>
     /// <param name="command"><see cref="DbCommand" /> instance.</param>
     /// <param name="name">Parameter name.</param>
@@ -145,10 +145,8 @@ public static partial class Extensions
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="name" /> parameter is null.</exception>
     public static DbCommand AddParameter(this DbCommand command, string name, object value)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         var parameter = command.CreateParameter(name, value);
 
@@ -166,10 +164,7 @@ public static partial class Extensions
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="name" /> parameter is null.</exception>
     public static DbCommand AddParameter(this DbCommand command, string name, object value, DbType type)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         var parameter = command.CreateParameter(name, value, type);
 
@@ -248,21 +243,13 @@ public static partial class Extensions
     /// </exception>
     public static DbCommand AddParameters<T>(this DbCommand command, string name, List<T> parameterValues)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.CommandText);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(parameterValues);
-
+        
         if (parameterValues.Count == 0)
         {
             throw new Exception("Parameter values list is empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(command.CommandText))
-        {
-            throw new Exception("The CommandText must already be set before calling this method.");
         }
 
         if (command.CommandText.Contains(name) == false)
@@ -274,16 +261,15 @@ public static partial class Extensions
 
         foreach (var value in parameterValues)
         {
-            // Note that we are appending the ordinal parameter position as a suffix to the parameter name in order to create
-            // some uniqueness for each parameter name as well as to aid in debugging.
-            var paramName = name + "_p" + command.Parameters.Count;
+            // append the ordinal position for uniqueness and aid debugging
+            var paramName = $"{name}_p{command.Parameters.Count}";
 
             parameterNames.Add(paramName);
 
             command.AddParameter(paramName, value);
         }
 
-        var commaDelimitedString = string.Join(",", parameterNames);
+        var commaDelimitedString = string.Join(',', parameterNames);
 
         command.CommandText = command.CommandText.Replace(name, commaDelimitedString);
 
@@ -313,21 +299,13 @@ public static partial class Extensions
     /// </exception>
     public static DbCommand AddParameters<T>(this DbCommand command, string name, List<T> parameterValues, DbType type)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.CommandText);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(parameterValues);
 
         if (parameterValues.Count == 0)
         {
             throw new Exception("Parameter values list is empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(command.CommandText))
-        {
-            throw new Exception("The CommandText must already be set before calling this method.");
         }
 
         if (command.CommandText.Contains(name) == false)
@@ -339,16 +317,15 @@ public static partial class Extensions
 
         foreach (var value in parameterValues)
         {
-            // Note that we are appending the ordinal parameter position as a suffix to the parameter name in order to create
-            // some uniqueness for each parameter name as well as to aid in debugging.
-            var paramName = name + "_p" + command.Parameters.Count;
+            // append the ordinal position for uniqueness and aid debugging
+            var paramName = $"{name}_p{command.Parameters.Count}";
 
             parameterNames.Add(paramName);
 
             command.AddParameter(paramName, value, type);
         }
 
-        var commaDelimitedString = string.Join(",", parameterNames);
+        var commaDelimitedString = string.Join(',', parameterNames);
 
         command.CommandText = command.CommandText.Replace(name, commaDelimitedString);
 
@@ -358,31 +335,16 @@ public static partial class Extensions
 
     #region Generate inserts
     /// <summary>
-    /// The ANSI SQL INSERT command template. Timeless :)
+    /// The ANSI SQL INSERT command template.
     /// </summary>
     private static readonly string AnsiSqlInsert = @$"INSERT INTO {{0}}({{1}}) VALUES({{2}});";
 
-    /// <summary>
-    /// The SQL Server INSERT command template--outputs the inserted object(s) back.
-    /// </summary>
-    private static readonly string SqlServerInsertWithOutput = @$"INSERT INTO {{0}}({{1}}) OUTPUT Inserted.* VALUES({{2}});{Environment.NewLine}";
-
-    /// <summary>
-    /// The SQL Server INSERT command template.
-    /// </summary>
-    private static readonly string SqlServerInsert = AnsiSqlInsert + "SELECT SCOPE_IDENTITY();";
-
+    #region MySql
     /// <summary>
     /// MySql INSERT command template, returns the last inserted id(s).
     /// </summary>
     public static string MySqlInsert { get; set; } = AnsiSqlInsert + "SELECT LAST_INSERT_ID();";
 
-    /// <summary>
-    /// SqLite INSERT command template, returns the last inserted row id(s).
-    /// </summary>
-    public static string SqLiteInsert { get; set; } = AnsiSqlInsert + "SELECT last_insert_rowid();";
-
-    #region MySql
     /// <summary>
     /// Generates a parameterized MySQL INSERT statement from the given object and adds it to the <see cref="DbCommand" />.
     /// <para>
@@ -436,6 +398,11 @@ public static partial class Extensions
     #endregion
 
     #region SqLite
+    /// <summary>
+    /// SqLite INSERT command template, returns the last inserted row id(s).
+    /// </summary>
+    public static string SqLiteInsert { get; set; } = AnsiSqlInsert + "SELECT last_insert_rowid();";
+
     /// <summary>
     /// Generates a parameterized SQLite INSERT statement from the given object and adds it to the <see cref="DbCommand" />
     /// .
@@ -492,6 +459,16 @@ public static partial class Extensions
     #endregion
 
     #region SqlServer
+    /// <summary>
+    /// The SQL Server INSERT command template.
+    /// </summary>
+    private static readonly string SqlServerInsert = AnsiSqlInsert + "SELECT SCOPE_IDENTITY();";
+
+    /// <summary>
+    /// The SQL Server INSERT command template--outputs the inserted object(s) back.
+    /// </summary>
+    private static readonly string SqlServerInsertWithOutput = @$"INSERT INTO {{0}}({{1}}) OUTPUT Inserted.* VALUES({{2}});{Environment.NewLine}";
+
     /// <summary>
     /// Generates a parameterized SQL Server INSERT statement for an item followed by a
     /// SELECT SCOPE_IDENTITY() (numeric(38,0) == System.Decimal, 29 digits) statement.
@@ -590,11 +567,7 @@ public static partial class Extensions
     public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
     {
         ArgumentNullException.ThrowIfNull(item);
-
-        if (string.IsNullOrWhiteSpace(template))
-        {
-            throw new ArgumentNullException(nameof(template), "The parameter must not be null, empty, or whitespace.");
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(template);
 
         if (!(template.Contains("{0}") && template.Contains("{1}") && template.Contains("{2}")))
         {
@@ -603,7 +576,7 @@ public static partial class Extensions
 
         if (table is null && item.IsAnonymousType())
         {
-            throw new ArgumentNullException(nameof(table), "table parameter is required when item is anonymous.");
+            throw new ArgumentNullException(nameof(table), "table is required for anonymous type items.");
         }
 
         var p = string.Empty;
@@ -620,8 +593,6 @@ public static partial class Extensions
                 break;
         }
 
-        // get schema & table from object attribute: NOMO in 2025, EF extracted to separate project!!
-        // table ??= BuildEntityName(item, p, s);
         table ??= $"{p}{item.GetType().Name}{s}";
 
         var columns = new List<string>();
@@ -654,7 +625,6 @@ public static partial class Extensions
     #endregion
 
     #region Generate select
-
     /// <summary>
     /// Generates a parameterized SQL Server SELECT statement from the given object and adds it to the
     /// <see cref="DbCommand" />.
@@ -702,10 +672,7 @@ public static partial class Extensions
     /// </remarks>
     public static DbCommand GenerateSelectByIdCommand(this DbCommand command, string template, string table, long objId, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None)
     {
-        if (string.IsNullOrWhiteSpace(template))
-        {
-            throw new ArgumentNullException(nameof(template), "The parameter must not be null, empty, or whitespace.");
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(template);
 
         if (template.Contains("{0}") == false || template.Contains("{1}") == false)
         {

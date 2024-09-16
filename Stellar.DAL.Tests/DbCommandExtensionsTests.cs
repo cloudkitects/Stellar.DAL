@@ -28,15 +28,15 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     {
         var command = GetCommand();
 
-        var superHeroNameParameter = command.CreateParameter("@SuperHeroName", "Superman");
-        var alterEgoFirstNameParameter = command.CreateParameter("@AlterEgoFirstName", "Clark");
-        var alterEgoLastNameParameter = command.CreateParameter("@AlterEgoLastName", "Kent");
+        var param1 = command.CreateParameter("@SuperHeroName", "Superman");
+        var param2 = command.CreateParameter("@AlterEgoFirstName", "Clark");
+        var param3 = command.CreateParameter("@AlterEgoLastName", "Kent");
 
-        command = command.AddParameters(superHeroNameParameter, alterEgoFirstNameParameter, alterEgoLastNameParameter);
+        command = command.AddParameters(param1, param2, param3);
 
-        Assert.Equal(superHeroNameParameter.Value, command.Parameters[superHeroNameParameter.ParameterName].Value);
-        Assert.Equal(alterEgoFirstNameParameter.Value, command.Parameters[alterEgoFirstNameParameter.ParameterName].Value);
-        Assert.Equal(alterEgoLastNameParameter.Value, command.Parameters[alterEgoLastNameParameter.ParameterName].Value);
+        Assert.Equal(param1.Value, command.Parameters[param1.ParameterName].Value);
+        Assert.Equal(param2.Value, command.Parameters[param2.ParameterName].Value);
+        Assert.Equal(param3.Value, command.Parameters[param3.ParameterName].Value);
     }
 
     [Fact]

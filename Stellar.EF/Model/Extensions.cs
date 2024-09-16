@@ -46,7 +46,7 @@ public static class Extensions
     /// </remarks>
     public static DynamicDictionary ExtendWith(this object obj, string key, object value)
     {
-        var dictionary = Stellar.DAL.Extensions.ToDynamicDictionary(obj);
+        var dictionary = DAL.Extensions.ToDynamicDictionary(obj);
 
         dictionary.Add(key, value);
 
@@ -119,7 +119,7 @@ public static class Extensions
         // Handle mapping to primitives and strings when there is only a single field in the record
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return (T)DAL.TypeConverter.Convert(dataRecord.GetValue(0), type);
+            return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -149,7 +149,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = DAL.TypeConverter.Convert(value, propertyInfo.PropertyType);
+                        var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
 
                         try
                         {
@@ -174,7 +174,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = DAL.TypeConverter.Convert(value, fieldInfo.FieldType);
+                        var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
 
                         try
                         {
@@ -195,7 +195,7 @@ public static class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : (T)DAL.TypeConverter.Convert(dataRecord.GetValue(0), type)!;
+            : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
     }
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
@@ -331,7 +331,7 @@ public static class Extensions
 
             return mapped || fieldCount != 1
                 ? (T)obj
-                : (T)Stellar.DAL.TypeConverter.Convert(dataRecord.GetValue(0), type);
+                : (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
         }
 
 }

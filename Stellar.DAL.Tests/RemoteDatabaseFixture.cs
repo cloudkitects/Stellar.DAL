@@ -1,5 +1,7 @@
 ﻿using Microsoft.Identity.Client;
 
+using System.Data.SqlClient;
+
 namespace Stellar.DAL.Tests;
 
 public class RemoteDatabaseFixture : IDisposable
@@ -33,7 +35,7 @@ public class RemoteDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return new DatabaseClient(_connectionString, accessToken: GetToken().Result)
+        return new DbClient<SqlConnection>(_connectionString, accessToken: GetToken().Result)
             .GetCommand();
     }
     #endregion

@@ -5,9 +5,9 @@
 /// that do not specify a table name.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class EntityAttribute(string schema, string table = null) : Attribute
+public sealed class EntityAttribute(string schema, string? table = null) : Attribute
 {
-    public string Table { get; } = table;
+    public string? Table { get; } = table;
 
     public string Schema { get; } = schema;
 }
