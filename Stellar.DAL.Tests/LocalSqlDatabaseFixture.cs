@@ -99,7 +99,7 @@ public class LocalSqlDatabaseFixture : IDisposable
     public DatabaseCommand GetSelectByIdCommand(string table, long id)
     {
         return GetCommand()
-            .GenerateSelectByIdForSqlServer(table, id);
+            .GenerateSqlServerSelectById(table, id);
     }
     #endregion
 }

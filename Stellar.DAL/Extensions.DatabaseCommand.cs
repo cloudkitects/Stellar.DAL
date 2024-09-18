@@ -7,13 +7,12 @@ using System.Net;
 
 namespace Stellar.DAL;
 
+/// <summary>
+/// <see cref="DatabaseCommand" /> fluent extensions.
+/// </summary>
 public static partial class Extensions
 {
-    #region Set properties
-    /// <summary>Sets the text command to run against the data source.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="commandText">The text command to run against the data source.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
+    #region setters
     public static DatabaseCommand SetCommandText(this DatabaseCommand databaseCommand, string commandText)
     {
         databaseCommand.DbCommand.SetCommandText(commandText);
@@ -21,10 +20,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Appends to the text command to run against the data source.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="commandText">Text command to append to the text command to run against the data source.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AppendCommandText(this DatabaseCommand databaseCommand, string commandText)
     {
         databaseCommand.DbCommand.AppendCommandText(commandText);
@@ -32,10 +27,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Sets the CommandType.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="commandType">CommandType which specifies how a command string is interpreted.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand SetCommandType(this DatabaseCommand databaseCommand, CommandType commandType)
     {
         databaseCommand.DbCommand.SetCommandType(commandType);
@@ -43,25 +34,22 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Sets the time in seconds to wait for the command to execute before throwing an exception. The default is 30 seconds.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="commandTimeoutSeconds">The time in seconds to wait for the command to execute. The default is 30 seconds.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand SetCommandTimeout(this DatabaseCommand databaseCommand, int commandTimeoutSeconds)
     {
         databaseCommand.DbCommand.SetCommandTimeout(commandTimeoutSeconds);
 
         return databaseCommand;
     }
+
+    public static DatabaseCommand SetTransaction(this DatabaseCommand databaseCommand, DbTransaction dbTransaction)
+    {
+        databaseCommand.DbCommand.SetTransaction(dbTransaction);
+
+        return databaseCommand;
+    }
     #endregion
 
-    #region Parameters
-    /// <summary>Adds a <see cref="DbParameter" /> to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="dbParameter"><see cref="DbParameter" /> to add.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
+    #region parameter helpers
     public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, DbParameter dbParameter)
     {
         databaseCommand.DbCommand.AddParameter(dbParameter);
@@ -69,11 +57,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Adds a parameter to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValue">Parameter value.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue)
     {
         databaseCommand.DbCommand.AddParameter(parameterName, parameterValue);
@@ -81,12 +64,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Adds a parameter to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValue">Parameter value.</param>
-    /// <param name="dbType">Parameter type.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType)
     {
         databaseCommand.DbCommand.AddParameter(parameterName, parameterValue, dbType);
@@ -94,10 +71,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Adds a list of <see cref="DbParameter" />s to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="dbParameters">List of database parameters.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, IEnumerable<DbParameter> dbParameters)
     {
         databaseCommand.DbCommand.AddParameters(dbParameters);
@@ -105,10 +78,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Adds a parameter array of <see cref="DbParameter" />s to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="dbParameters">Parameter array of database parameters.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, params DbParameter[] dbParameters)
     {
         databaseCommand.DbCommand.AddParameters(dbParameters);
@@ -116,10 +85,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Adds a dictionary of parameter names and values to the <see cref="DatabaseCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterNameAndValueDictionary">Dictionary of parameter names and values.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, IDictionary<string, object> parameterNameAndValueDictionary)
     {
         databaseCommand.DbCommand.AddParameters(parameterNameAndValueDictionary);
@@ -127,21 +92,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Adds the list of parameter values to the <see cref="DatabaseCommand" /> by replacing the given parameterName in the
-    /// CommandText with a comma delimited list of generated parameter names such as "parameterName0, parameterName1,
-    /// parameterName2", etc.
-    /// </summary>
-    /// <typeparam name="T">Parameter type.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValues">Parameter values.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="parameterName" /> parameter is null.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="parameterValues" /> parameter is null.</exception>
-    /// <exception cref="Exception">Thrown when the <paramref name="parameterValues" /> list is empty.</exception>
-    /// <exception cref="Exception">Thrown when the CommandText has not been set prior to calling this method.</exception>
-    /// <exception cref="Exception">Thrown when the CommandText does not contain the <paramref name="parameterName" />.</exception>
     public static DatabaseCommand AddParameters<T>(this DatabaseCommand databaseCommand, string parameterName, List<T> parameterValues)
     {
         databaseCommand.DbCommand.AddParameters(parameterName, parameterValues);
@@ -149,22 +99,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Adds the list of parameter values of the specified <see cref="DbType" /> to the <see cref="DatabaseCommand" /> by
-    /// replacing the given parameterName in the CommandText with a comma delimited list of generated parameter names such as
-    /// "parameterName0, parameterName1, parameterName2", etc.
-    /// </summary>
-    /// <typeparam name="T">Parameter type.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValues">Parameter values.</param>
-    /// <param name="dbType">Parameter type.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="parameterName" /> parameter is null.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="parameterValues" /> parameter is null.</exception>
-    /// <exception cref="Exception">Thrown when the <paramref name="parameterValues" /> list is empty.</exception>
-    /// <exception cref="Exception">Thrown when the CommandText has not been set prior to calling this method.</exception>
-    /// <exception cref="Exception">Thrown when the CommandText does not contain the <paramref name="parameterName" />.</exception>
     public static DatabaseCommand AddParameters<T>(this DatabaseCommand databaseCommand, string parameterName, List<T> parameterValues, DbType dbType)
     {
         databaseCommand.DbCommand.AddParameters(parameterName, parameterValues, dbType);
@@ -172,11 +106,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>Creates a <see cref="DbParameter" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValue">Parameter value.</param>
-    /// <returns><see cref="DbParameter" />.</returns>
     public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue)
     {
         var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue);
@@ -184,12 +113,6 @@ public static partial class Extensions
         return parameter;
     }
 
-    /// <summary>Creates a <see cref="DbParameter" /> with a given <see cref="DbType" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValue">Parameter value.</param>
-    /// <param name="dbType">Parameter type.</param>
-    /// <returns><see cref="DbParameter" />.</returns>
     public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType)
     {
         var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue, dbType);
@@ -197,15 +120,6 @@ public static partial class Extensions
         return parameter;
     }
 
-    /// <summary>
-    /// Creates a <see cref="DbParameter" /> with a given <see cref="DbType" /> and <see cref="ParameterDirection" />.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="parameterName">Parameter name.</param>
-    /// <param name="parameterValue">Parameter value.</param>
-    /// <param name="dbType">Parameter type.</param>
-    /// <param name="parameterDirection">Parameter direction.</param>
-    /// <returns><see cref="DbParameter" />.</returns>
     public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType, ParameterDirection parameterDirection)
     {
         var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue, dbType, parameterDirection);
@@ -214,156 +128,41 @@ public static partial class Extensions
     }
     #endregion
 
-    #region Transactions
-    /// <summary>Sets the transaction associated with the command.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="dbTransaction">The transaction to associate with the command.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    public static DatabaseCommand SetTransaction(this DatabaseCommand databaseCommand, DbTransaction dbTransaction)
-    {
-        databaseCommand.DbCommand.SetTransaction(dbTransaction);
-
-        return databaseCommand;
-    }
-
-    /// <summary>
-    /// Starts a database transaction and associates it with the <see cref="DatabaseCommand"/> instance.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <returns>An object representing the new transaction.</returns>
-    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand)
-    {
-        var transaction = databaseCommand.DbCommand.BeginTransaction();
-
-        return transaction;
-    }
-
-    /// <summary>
-    /// Starts a database transaction with the specified isolation level and associates it with the <see cref="DatabaseCommand"/> instance.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="isolationLevel">Specifies the isolation level for the transaction.</param>
-    /// <returns>An object representing the new transaction.</returns>
-    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand, IsolationLevel isolationLevel)
-    {
-        var transaction = databaseCommand.DbCommand.BeginTransaction(isolationLevel);
-
-        return transaction;
-    }
-    #endregion
-
-    #region Generate inserts
+    #region insert script generators
+    
     #region MySQL
-    /// <summary>
-    /// Generates a parameterized MySQL INSERT statement from the given object and adds it to the
-    /// <see cref="DatabaseCommand" />.
-    /// <para>
-    /// Note that the generated query also selects the last inserted id using SELECT LAST_INSERT_ID() function.
-    /// </para>
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="item">Object to generate the SQL INSERT statement from.</param>
-    /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous
-    /// type.
-    /// </exception>
-    public static DatabaseCommand GenerateInsertForMySql(this DatabaseCommand databaseCommand, object item, string table = null)
+    public static DatabaseCommand GenerateMySqlInsert(this DatabaseCommand databaseCommand, object item, string table = null)
     {
-        databaseCommand.DbCommand.GenerateInsertForMySql(item, table);
+        databaseCommand.DbCommand.GenerateMySqlInsert(item, table);
 
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Generates a list of concatenated parameterized MySQL INSERT statements from the given list of objects and adds it to
-    /// the <see cref="DatabaseCommand" />.
-    /// <para>
-    /// Note that the generated query also selects the last inserted id using SELECT LAST_INSERT_ID() function.
-    /// </para>
-    /// </summary>
-    /// <typeparam name="T">Type of the objects in the list.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="list">List of objects to generate the SQL INSERT statements from.</param>
-    /// <param name="table">
-    /// Optional table name to insert into. If none is supplied, it will use the type name. Note that this parameter is
-    /// required when passing in an anonymous object or an <see cref="ArgumentNullException" /> will be thrown.
-    /// </param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous
-    /// type.
-    /// </exception>
-    public static DatabaseCommand GenerateInsertsForMySql<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateMySqlInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateInsertsForMySql(list, table);
+        databaseCommand.DbCommand.GenerateMySqlInserts(list, table);
 
         return databaseCommand;
     }
     #endregion
 
     #region SqLite
-    /// <summary>
-    /// Generates a parameterized SQLite INSERT statement from the given object and adds it to the
-    /// <see cref="DatabaseCommand" />.
-    /// <para>
-    /// Note that the generated query also selects the last inserted id using SQLite's SELECT last_insert_rowid() function.
-    /// </para>
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="item">Object to generate the SQL INSERT statement from.</param>
-    /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous
-    /// type.
-    /// </exception>
-    // ReSharper disable once InconsistentNaming
-    public static DatabaseCommand GenerateInsertForSQLite(this DatabaseCommand databaseCommand, object item, string table = null)
+    public static DatabaseCommand GenerateSQLiteInsert(this DatabaseCommand databaseCommand, object item, string table = null)
     {
-        databaseCommand.DbCommand.GenerateInsertForSQLite(item, table);
+        databaseCommand.DbCommand.GenerateSQLiteInsert(item, table);
 
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Generates a list of concatenated parameterized SQLite INSERT statements from the given list of objects and adds it to
-    /// the <see cref="DatabaseCommand" />.
-    /// <para>
-    /// Note that the generated query also selects the last inserted id using SQLite's SELECT last_insert_rowid() function.
-    /// </para>
-    /// </summary>
-    /// <typeparam name="T">Type of the objects in the list.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="list">List of objects to generate the SQL INSERT statements from.</param>
-    /// <param name="table">
-    /// Optional table name to insert into. If none is supplied, it will use the type name. Note that this parameter is
-    /// required when passing in an anonymous object or an <see cref="ArgumentNullException" /> will be thrown.
-    /// </param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous
-    /// type.
-    /// </exception>
-    // ReSharper disable once InconsistentNaming
-    public static DatabaseCommand GenerateInsertsForSQLite<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSQLiteInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateInsertsForSQLite(list, table);
+        databaseCommand.DbCommand.GenerateSQLiteInserts(list, table);
 
         return databaseCommand;
     }
     #endregion
 
     #region SqlServer
-    /// <summary>
-    /// Generates a parameterized SQL Server INSERT statement from the given object and adds it to the
-    /// <see cref="DatabaseCommand" />.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="item">Object to generate the SQL INSERT statement from.</param>
-    /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand databaseCommand, object item, string table = null)
     {
         databaseCommand.DbCommand.GenerateSqlServerInsert(item, table);
@@ -371,14 +170,6 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Generates a parameterized SQL Server INSERT statement from the given object and adds it to the
-    /// <see cref="DatabaseCommand" />.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="item">Object to generate the SQL INSERT statement from.</param>
-    /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
     public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand databaseCommand, object item, string table = null)
     {
         databaseCommand.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
@@ -386,32 +177,14 @@ public static partial class Extensions
         return databaseCommand;
     }
 
-    /// <summary>
-    /// Generates a list of concatenated parameterized SQL Server INSERT statements from the given list of objects and adds it
-    /// to the <see cref="DatabaseCommand" />.
-    /// <para>
-    /// Note that the generated query also selects the last inserted id using SQL Server's SELECT SCOPE_IDENTITY() function.
-    /// </para>
-    /// </summary>
-    /// <typeparam name="T">Type of the objects in the list.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="list">List of objects to generate the SQL INSERT statements from.</param>
-    /// <param name="table">
-    /// Optional table name to insert into. If none is supplied, it will use the type name. Note that this parameter is
-    /// required when passing in an anonymous object or an <see cref="ArgumentNullException" /> will be thrown.
-    /// </param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous
-    /// type.
-    /// </exception>
-    public static DatabaseCommand GenerateInsertsForSqlServer<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSqlServerInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateInsertsForSqlServer(list, table);
+        databaseCommand.DbCommand.GenerateSqlServerInserts(list, table);
 
         return databaseCommand;
     }
     #endregion
+
     #endregion
 
     #region Generate select
@@ -426,9 +199,9 @@ public static partial class Extensions
     /// <exception cref="ArgumentNullException">
     /// The value of 'table' cannot be null when the object passed is an anonymous type.
     /// </exception>
-    public static DatabaseCommand GenerateSelectByIdForSqlServer(this DatabaseCommand databaseCommand, string table, long id)
+    public static DatabaseCommand GenerateSqlServerSelectById(this DatabaseCommand databaseCommand, string table, long id)
     {
-        databaseCommand.DbCommand.GenerateSelectByIdForSqlServer(table, id);
+        databaseCommand.DbCommand.GenerateSqlServerSelectById(table, id);
 
         return databaseCommand;
     }
@@ -721,6 +494,22 @@ public static partial class Extensions
     public static DataTable ExecuteToDataTable(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         return databaseCommand.ExecuteToDataSet(keepConnectionOpen).Tables[0];
+    }
+    #endregion
+
+    #region transactions
+    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand)
+    {
+        var transaction = databaseCommand.DbCommand.BeginTransaction();
+
+        return transaction;
+    }
+
+    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand, IsolationLevel isolationLevel)
+    {
+        var transaction = databaseCommand.DbCommand.BeginTransaction(isolationLevel);
+
+        return transaction;
     }
     #endregion
 

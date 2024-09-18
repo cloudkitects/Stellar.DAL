@@ -16,7 +16,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var customers = Seed.Customers.ToList();
 
-        var command = database.GetCommand().GenerateInsertsForSqlServer(customers);
+        var command = database.GetCommand().GenerateSqlServerInserts(customers);
 
         var debugInfo = command.GetDebugInfo();
 
@@ -34,7 +34,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var customers = Seed.Customers.ToList();
 
-        var command = database.GetCommand().GenerateInsertsForSqlServer(customers);
+        var command = database.GetCommand().GenerateSqlServerInserts(customers);
 
         var result = command.ExecuteToList<Customer>();
 
@@ -166,7 +166,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
         };
 
         var command = database.GetCommand()
-            .GenerateInsertsForSqlServer(customers);
+            .GenerateSqlServerInserts(customers);
             
         var models = command.ExecuteToList<CustomerWithTraits>();
 

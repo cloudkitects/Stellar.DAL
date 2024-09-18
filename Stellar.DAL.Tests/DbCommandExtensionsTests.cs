@@ -198,7 +198,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         void Action() => command.AddParameters(parameterName, parameterList);
 
-        Assert.Throws<Exception>(Action);
+        Assert.Throws<ArgumentException>(Action);
     }
 
     [Fact]
@@ -541,7 +541,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         void Action() => command.GenerateInsertCommand(customer, "", "[Customer]");
 
-        var exception = Assert.Throws<ArgumentNullException>(Action);
+        var exception = Assert.Throws<ArgumentException>(Action);
 
         Assert.NotNull(exception);
 
@@ -634,7 +634,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
         var customers = Seed.Customers.ToList();
 
         var command = GetCommand()
-            .GenerateInsertsForSqlServer(customers, table);
+            .GenerateSqlServerInserts(customers, table);
 
         Assert.NotNull(command.CommandText);
         Assert.Contains("INSERT", command.CommandText);
