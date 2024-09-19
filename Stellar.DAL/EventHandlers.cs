@@ -4,60 +4,49 @@ using System.Collections.Generic;
 namespace Stellar.DAL;
 
 /// <summary>
-/// <see cref="DatabaseCommand" /> event handlers.
+/// Pre-execute, post-execute and unhandled exception <see cref="DatabaseCommand" /> event handlers.
 /// </summary>
 public static class EventHandlers
 {
-    /// <summary>Event handler called after the <see cref="DatabaseCommand" /> has been executed.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public delegate void DatabaseCommandPostExecuteEventHandler(DatabaseCommand databaseCommand);
+    #region delegates
+    public delegate void PreExecuteEventHandler(DatabaseCommand databaseCommand);
 
-    /// <summary>Event handler called before the <see cref="DatabaseCommand" /> is executed.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public delegate void DatabaseCommandPreExecuteEventHandler(DatabaseCommand databaseCommand);
+    public delegate void PostExecuteEventHandler(DatabaseCommand databaseCommand);
 
-    /// <summary>Event handler called when an unhandled exception occurs.</summary>
-    /// <param name="exception">Unhandled exception.</param>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public delegate void DatabaseCommandUnhandledExceptionEventHandler(Exception exception, DatabaseCommand databaseCommand);
+    public delegate void UnhandledExceptionEventHandler(Exception exception, DatabaseCommand databaseCommand);
+    #endregion
 
-    /// <summary>Event triggered when an unhandled exception occurs.</summary>
-    public static readonly List<DatabaseCommandUnhandledExceptionEventHandler> DatabaseCommandUnhandledExceptionEventHandlers = [];
+    #region delegate collections
+    public static readonly List<PreExecuteEventHandler> PreExecuteEventHandlers = [];
 
-    /// <summary>Event triggered before the <see cref="DatabaseCommand" /> is executed.</summary>
-    public static readonly List<DatabaseCommandPreExecuteEventHandler> DatabaseCommandPreExecuteEventHandlers = [];
+    public static readonly List<PostExecuteEventHandler> PostExecuteEventHandlers = [];
+    
+    public static readonly List<UnhandledExceptionEventHandler> UnhandledExceptionEventHandlers = [];
+    #endregion
 
-    /// <summary>Event triggered after the <see cref="DatabaseCommand" /> has been executed.</summary>
-    public static readonly List<DatabaseCommandPostExecuteEventHandler> DatabaseCommandPostExecuteEventHandlers = [];
-
-    /// <summary>Invokes the <see cref="DatabaseCommand" /> unhandled exception event handlers.</summary>
-    /// <param name="exception">Unhandled exception.</param>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public static void InvokeDatabaseCommandUnhandledExceptionEventHandlers(Exception exception, DatabaseCommand databaseCommand)
+    #region invocation
+    public static void InvokePreExecuteEventHandlers(DatabaseCommand databaseCommand)
     {
-        foreach (var databaseCommandUnhandledExceptionEventHandler in DatabaseCommandUnhandledExceptionEventHandlers)
+        foreach (var handler in PreExecuteEventHandlers)
         {
-            databaseCommandUnhandledExceptionEventHandler.Invoke(exception, databaseCommand);
+            handler.Invoke(databaseCommand);
         }
     }
 
-    /// <summary>Invokes the <see cref="DatabaseCommand" /> pre-execute event handlers.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public static void InvokeDatabaseCommandPreExecuteEventHandlers(DatabaseCommand databaseCommand)
+    public static void InvokePostExecuteEventHandlers(DatabaseCommand databaseCommand)
     {
-        foreach (var databaseCommandPreExecuteEventHandler in DatabaseCommandPreExecuteEventHandlers)
+        foreach (var handler in PostExecuteEventHandlers)
         {
-            databaseCommandPreExecuteEventHandler.Invoke(databaseCommand);
+            handler.Invoke(databaseCommand);
         }
     }
 
-    /// <summary>Invokes the <see cref="DatabaseCommand" /> post-execute event handlers.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    public static void InvokeDatabaseCommandPostExecuteEventHandlers(DatabaseCommand databaseCommand)
+    public static void InvokeUnhandledExceptionEventHandlers(Exception exception, DatabaseCommand databaseCommand)
     {
-        foreach (var databaseCommandPostExecuteEventHandler in DatabaseCommandPostExecuteEventHandlers)
+        foreach (var handler in UnhandledExceptionEventHandlers)
         {
-            databaseCommandPostExecuteEventHandler.Invoke(databaseCommand);
+            handler.Invoke(exception, databaseCommand);
         }
     }
+    #endregion
 }

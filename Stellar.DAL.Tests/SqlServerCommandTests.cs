@@ -89,7 +89,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.DatabaseCommandPreExecuteEventHandlers.Add(_ => handlerCalled = true);
+        EventHandlers.PreExecuteEventHandlers.Add(_ => handlerCalled = true);
 
         database.GetCommand()
             .SetCommandText("SELECT 1")
@@ -103,7 +103,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.DatabaseCommandPostExecuteEventHandlers.Add(_ => handlerCalled = true);
+        EventHandlers.PostExecuteEventHandlers.Add(_ => handlerCalled = true);
 
         database.GetCommand()
             .SetCommandText("SELECT 1")
@@ -117,7 +117,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.DatabaseCommandUnhandledExceptionEventHandlers.Add((_, _) =>
+        EventHandlers.UnhandledExceptionEventHandlers.Add((_, _) =>
         {
             handlerCalled = true;
         });

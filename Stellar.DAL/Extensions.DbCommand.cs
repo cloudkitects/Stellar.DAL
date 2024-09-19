@@ -240,10 +240,66 @@ public static partial class Extensions
     #endregion
 
     #region insert script generators
-    /// <summary>
-    /// The ANSI SQL INSERT command template.
-    /// </summary>
     private static readonly string AnsiSqlInsert = @$"INSERT INTO {{0}}({{1}}) VALUES({{2}});";
+
+    public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentException.ThrowIfNullOrWhiteSpace(template);
+
+        if (!(template.Contains("{0}") && template.Contains("{1}") && template.Contains("{2}")))
+        {
+            throw new Exception($"The template must define three arguments, e.g., {AnsiSqlInsert}.");
+        }
+
+        if (string.IsNullOrWhiteSpace(table) && item.IsAnonymousType())
+        {
+            throw new ArgumentNullException(nameof(table), "table is required for anonymous type items.");
+        }
+
+        var p = string.Empty;
+        var s = string.Empty;
+
+        switch (keywordEscapeMethod)
+        {
+            case KeywordEscapeMethod.SquareBracket: p = "[";  s = "]";  break;
+            case KeywordEscapeMethod.DoubleQuote:   p = "\""; s = "\""; break;
+            case KeywordEscapeMethod.Backtick:      p = "`";  s = "`";  break;
+            case KeywordEscapeMethod.None:
+                goto default;
+            default:
+                break;
+        }
+
+        table ??= $"{p}{item.GetType().Name}{s}";
+
+        var columns = new List<string>();
+        var values = new List<string>();
+
+        var namesAndValues = TypeCache.GetMetadataAndValues(item);
+
+        foreach (var (key, value) in namesAndValues)
+        {
+            if (value == null)
+            {
+                continue;
+            }
+
+            var name = $"@{key}_p{command.Parameters.Count}";
+
+            columns.Add($"{p}{key}{s}");
+            values.Add(name);
+
+            command.AddParameter(name, value);
+        }
+
+        command.AppendCommandText(string.Format(template,
+            table,
+            string.Join(',', columns),
+            string.Join(',', values)));
+
+        return command;
+    }
 
     #region MySql
     public static string MySqlInsert { get; set; } = AnsiSqlInsert + "SELECT LAST_INSERT_ID();";
@@ -314,64 +370,6 @@ public static partial class Extensions
     }
     #endregion
 
-    public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        ArgumentException.ThrowIfNullOrWhiteSpace(template);
-
-        if (!(template.Contains("{0}") && template.Contains("{1}") && template.Contains("{2}")))
-        {
-            throw new Exception($"The template must define three arguments, e.g., {AnsiSqlInsert}.");
-        }
-
-        if (string.IsNullOrWhiteSpace(table) && item.IsAnonymousType())
-        {
-            throw new ArgumentNullException(nameof(table), "table is required for anonymous type items.");
-        }
-
-        var p = string.Empty;
-        var s = string.Empty;
-
-        switch (keywordEscapeMethod)
-        {
-            case KeywordEscapeMethod.SquareBracket: p = "[";  s = "]";  break;
-            case KeywordEscapeMethod.DoubleQuote:   p = "\""; s = "\""; break;
-            case KeywordEscapeMethod.Backtick:      p = "`";  s = "`";  break;
-            case KeywordEscapeMethod.None:
-                goto default;
-            default:
-                break;
-        }
-
-        table ??= $"{p}{item.GetType().Name}{s}";
-
-        var columns = new List<string>();
-        var values = new List<string>();
-
-        var namesAndValues = TypeCache.GetMetadataAndValues(item);
-
-        foreach (var (key, value) in namesAndValues)
-        {
-            if (value == null)
-            {
-                continue;
-            }
-
-            var name = $"@{key}_p{command.Parameters.Count}";
-
-            columns.Add($"{p}{key}{s}");
-            values.Add(name);
-
-            command.AddParameter(name, value);
-        }
-
-        command.AppendCommandText(string.Format(template,
-            table,
-            string.Join(',', columns),
-            string.Join(',', values)));
-
-        return command;
-    }
     #endregion
 
     #region select script generators
@@ -421,7 +419,6 @@ public static partial class Extensions
 
         return command;
     }
-
     #endregion
 
     #region transactions; TODO: commit and rollback?

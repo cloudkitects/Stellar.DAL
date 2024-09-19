@@ -187,18 +187,7 @@ public static partial class Extensions
 
     #endregion
 
-    #region Generate select
-    /// <summary>
-    /// Generates a parameterized SQL Server SELECT statement from the given object and adds it to the
-    /// <see cref="DatabaseCommand" />.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="table">Optional table name to insert into. If none is supplied, it will use the type name.</param>
-    /// <param name="id"></param>
-    /// <returns>The given <see cref="DatabaseCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// The value of 'table' cannot be null when the object passed is an anonymous type.
-    /// </exception>
+    #region select script generators
     public static DatabaseCommand GenerateSqlServerSelectById(this DatabaseCommand databaseCommand, string table, long id)
     {
         databaseCommand.DbCommand.GenerateSqlServerSelectById(table, id);
@@ -207,29 +196,24 @@ public static partial class Extensions
     }
     #endregion
 
-    #region Execute methods
-    /// <summary>Executes a statement against the database and returns the number of rows affected.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>The number of rows affected.</returns>
-    /// <exception cref="Exception">Unexpected exception.</exception>
+    #region execute wrappers
     public static long ExecuteNonQuery(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
-        int numberOfRowsAffected;
+        long numberOfRowsAffected;
 
         try
         {
-            EventHandlers.InvokeDatabaseCommandPreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
 
             databaseCommand.DbCommand.OpenConnection();
 
             numberOfRowsAffected = databaseCommand.DbCommand.ExecuteNonQuery();
 
-            EventHandlers.InvokeDatabaseCommandPostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeDatabaseCommandUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
 
             throw;
         }
@@ -238,7 +222,6 @@ public static partial class Extensions
             if (keepConnectionOpen == false)
             {
                 databaseCommand.DbCommand.CloseAndDispose();
-
                 databaseCommand.DbCommand = null;
             }
         }
@@ -246,20 +229,13 @@ public static partial class Extensions
         return numberOfRowsAffected;
     }
 
-    /// <summary>
-    /// Executes the query and returns the first column of the first row in the result set returned by the query. All other
-    /// columns and rows are ignored.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>The first column of the first row in the result set.</returns>
     public static object ExecuteScalar(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         object returnValue;
 
         try
         {
-            EventHandlers.InvokeDatabaseCommandPreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
 
             databaseCommand.DbCommand.OpenConnection();
 
@@ -270,11 +246,11 @@ public static partial class Extensions
                 returnValue = null;
             }
 
-            EventHandlers.InvokeDatabaseCommandPostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeDatabaseCommandUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
 
             throw;
         }
@@ -283,7 +259,6 @@ public static partial class Extensions
             if (!keepConnectionOpen)
             {
                 databaseCommand.DbCommand.CloseAndDispose();
-
                 databaseCommand.DbCommand = null;
             }
         }
@@ -291,24 +266,6 @@ public static partial class Extensions
         return returnValue;
     }
 
-    /// <summary>
-    /// Executes the query and returns the first column of the first row in the result set returned by the query. All other
-    /// columns and rows are ignored.
-    /// </summary>
-    /// <typeparam name="T">Type to convert the result to.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>
-    /// The first column of the first row in the result set converted to a type of <typeparamref name="T" />.
-    /// </returns>
-    /// <exception cref="TypeConversionException">
-    /// Thrown when an error occurs attempting to convert a value to an
-    /// enum.
-    /// </exception>
-    /// <exception cref="TypeConversionException">
-    /// Thrown when an error occurs attempting to convert a value to a
-    /// type.
-    /// </exception>
     public static T ExecuteScalar<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         var returnValue = databaseCommand.ExecuteScalar(keepConnectionOpen);
@@ -316,22 +273,11 @@ public static partial class Extensions
         return returnValue.ConvertTo<T>();
     }
 
-    /// <summary>
-    /// Executes a statement against the database and calls the <paramref name="dataRecordCallback" /> action for each record
-    /// returned.
-    /// </summary>
-    /// <remarks>
-    /// For safety the DbDataReader is returned as an IDataRecord to the callback so that callers cannot modify the current row
-    /// being read.
-    /// </remarks>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="dataRecordCallback">Action called for each record returned.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
     public static void ExecuteReader(this DatabaseCommand databaseCommand, Action<IDataRecord> dataRecordCallback, bool keepConnectionOpen = false)
     {
         try
         {
-            EventHandlers.InvokeDatabaseCommandPreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
 
             databaseCommand.DbCommand.OpenConnection();
 
@@ -348,11 +294,11 @@ public static partial class Extensions
                 }
             }
 
-            EventHandlers.InvokeDatabaseCommandPostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeDatabaseCommandUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
 
             throw;
         }
@@ -366,18 +312,6 @@ public static partial class Extensions
         }
     }
 
-    /// <summary>
-    /// Executes a statement against a database and maps the results to a list of type <typeparamref name="T" /> using a given
-    /// mapper function supplied to the <paramref name="mapper" /> parameter.
-    /// </summary>
-    /// <typeparam name="T">The type to map the results to.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="mapper">
-    /// A method that takes an <see cref="IDataRecord" /> as an argument and returns an instance of type
-    /// <typeparamref name="T" />.
-    /// </param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
     public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
     {
         var list = new List<T>();
@@ -390,65 +324,33 @@ public static partial class Extensions
         return list;
     }
 
-    /// <summary>
-    /// Executes a statement against a database and maps matching column names to a list of type <typeparamref name="T" />.
-    /// </summary>
-    /// <typeparam name="T">The type to map the results to.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>Results mapped to a list of type <typeparamref name="T" />.</returns>
     public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         return databaseCommand.ExecuteToList(ToObject<T>, keepConnectionOpen);
     }
 
-    /// <summary>
-    /// Executes a statement against a database and maps the results to an object of type <typeparamref name="T" />
-    /// using a given <paramref name="mapper" /> function.
-    /// </summary>
-    /// <typeparam name="T">The type to map the results to.</typeparam>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="mapper">
-    /// A method that takes an <see cref="IDataRecord" /> as an argument and returns an instance of type
-    /// <typeparamref name="T" />.
-    /// </param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>An object of type <typeparamref name="T" />.</returns>
     public static T ExecuteToObject<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false) where T : new()
     {
         return databaseCommand.ExecuteToList<T>(keepConnectionOpen).FirstOrDefault();
     }
 
-    /// <summary>Executes a statement against a database and maps the results to a list of type dynamic.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>Results mapped to a list of type dynamic.</returns>
     public static List<dynamic> ExecuteToDynamicList(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         return databaseCommand.ExecuteToList(ToDynamic, keepConnectionOpen);
     }
 
-    /// <summary>Executes a statement against a database and maps the result to a dynamic object.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>Result mapped to a dynamic object.</returns>
-    public static dynamic ExecuteToDynamicObject(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static dynamic ExecuteToDynamic(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         return databaseCommand.ExecuteToDynamicList(keepConnectionOpen).FirstOrDefault();
     }
 
-    /// <summary>Executes a statement against a database and populates the results into a <see cref="DataSet" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>DataSet representing an in-memory cache of the result set.</returns>
-    /// <exception cref="Exception">An unexpected null was returned from a call to DbProviderFactory.CreateDataAdapter().</exception>
     public static DataSet ExecuteToDataSet(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         var dataSet = new DataSet();
 
         try
         {
-            EventHandlers.InvokeDatabaseCommandPreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
 
             databaseCommand.DbCommand.OpenConnection();
 
@@ -461,11 +363,11 @@ public static partial class Extensions
 
             dataAdapter.Fill(dataSet);
 
-            EventHandlers.InvokeDatabaseCommandPostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeDatabaseCommandUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
 
             throw;
         }
@@ -474,7 +376,6 @@ public static partial class Extensions
             if (keepConnectionOpen == false)
             {
                 databaseCommand.DbCommand.CloseAndDispose();
-
                 databaseCommand.DbCommand = null;
             }
         }
@@ -482,15 +383,6 @@ public static partial class Extensions
         return dataSet;
     }
 
-    /// <summary>
-    /// Executes a statement against a database and returns the first table populated in the <see cref="DataSet" />.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <param name="keepConnectionOpen">Optional parameter indicating whether to keep the connection open. Default is false.</param>
-    /// <returns>
-    /// DataTable representing an in-memory cache of the first <see cref="DataTable" /> result set from the returned
-    /// <see cref="DataSet" />.
-    /// </returns>
     public static DataTable ExecuteToDataTable(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
     {
         return databaseCommand.ExecuteToDataSet(keepConnectionOpen).Tables[0];
@@ -513,7 +405,7 @@ public static partial class Extensions
     }
     #endregion
 
-    #region Miscellaneous
+    #region miscellaneous
     public static bool TestConnection(this DatabaseCommand databaseCommand)
     {
         try
