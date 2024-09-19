@@ -514,17 +514,11 @@ public static partial class Extensions
     #endregion
 
     #region Miscellaneous
-    /// <summary>
-    /// Tests the connection to a database and returns true if a connection can be successfully opened and closed.
-    /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <returns>Returns true if a connection can be successfully opened and closed. </returns>
     public static bool TestConnection(this DatabaseCommand databaseCommand)
     {
         try
         {
             databaseCommand.DbCommand.Connection.Open();
-
             databaseCommand.DbCommand.Connection.Close();
 
             return true;
@@ -535,10 +529,6 @@ public static partial class Extensions
         }
     }
 
-    /// <summary>Returns the underlying <see cref="DbCommand" />.</summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <returns><see cref="DbCommand" /> instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="databaseCommand" /> parameter is null.</exception>
     public static DbCommand ToDbCommand(this DatabaseCommand databaseCommand)
     {
         ArgumentNullException.ThrowIfNull(databaseCommand);
@@ -549,9 +539,6 @@ public static partial class Extensions
     /// <summary>
     /// Generate a DTO with command and connection information.
     /// </summary>
-    /// <param name="databaseCommand"><see cref="DatabaseCommand" /> instance.</param>
-    /// <returns>JSON string with command and connection info.</returns>
-    // grant access to unit tests library
     internal static DebugInfo GetDebugInfo(this DatabaseCommand databaseCommand)
     {
         var command = databaseCommand.DbCommand;
