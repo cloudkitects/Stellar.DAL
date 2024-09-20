@@ -17,32 +17,38 @@ public static class TypeCache
     /// <summary>Gets and caches a type's properties and fields.</summary>
     /// <param name="type">Type.</param>
     /// <returns><see cref="OrderedDictionary"/> of case-insensitive member names with PropertyInfo and FieldInfo as values.</returns>
-    public static OrderedDictionary GetMetadata(Type type)
+    public static OrderedDictionary Get(Type type, Func<MemberInfo, bool> ignore = null)
     {
         if (Cache.TryGetValue(type, out OrderedDictionary value))
         {
             return value;
         }
 
-        var orderedDictionary = new OrderedDictionary(StringComparer.InvariantCultureIgnoreCase);
+        var typeMetadata = new OrderedDictionary(StringComparer.InvariantCultureIgnoreCase);
 
         var properties = type.GetProperties();
 
         foreach (var propertyInfo in properties)
         {
-            orderedDictionary[propertyInfo.Name] = propertyInfo;
+            if (!(ignore?.Invoke(propertyInfo) ?? false))
+            {
+                typeMetadata[propertyInfo.Name] = propertyInfo;
+            }
         }
 
         var fields = type.GetFields();
 
         foreach (var fieldInfo in fields)
         {
-            orderedDictionary[fieldInfo.Name] = fieldInfo;
+            if (!(ignore?.Invoke(fieldInfo) ?? false))
+            {
+                typeMetadata[fieldInfo.Name] = fieldInfo;
+            }
         }
 
-        Cache.Add(type, orderedDictionary);
+        Cache.Add(type, typeMetadata);
 
-        return orderedDictionary;
+        return typeMetadata;
     }
 
     /// <summary>Gets a dictionary containing the objects property and field names and values.</summary>
@@ -58,7 +64,7 @@ public static class TypeCache
 
         var type = instance.GetType();
 
-        var metadata = GetMetadata(type);
+        var metadata = Get(type);
 
         var dictionary = new Dictionary<string, object>();
 

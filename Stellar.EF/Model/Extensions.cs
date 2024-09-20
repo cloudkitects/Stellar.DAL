@@ -6,11 +6,13 @@ using System.Collections.Specialized;
 using Stellar.DAL;
 using TypeConverter = Stellar.DAL.TypeConverter;
 using static Stellar.DAL.Extensions;
+using System.Text;
 
 namespace Stellar.EF.Model;
 
 public static class Extensions
 {
+    #region Entity
     public static bool IdIsNull(this Entity entity)
     {
         return entity is null;
@@ -25,6 +27,7 @@ public static class Extensions
     {
         return IdIsNull(entity) || IdIsEmpty(entity);
     }
+    #endregion
 
     public static void TransferEntityAttribute(Type type, DynamicDictionary dictionary)
     {
@@ -36,14 +39,6 @@ public static class Extensions
         }
     }
 
-    /// <summary>
-    /// Extend a dynamic dictionary with the given key-value pair.
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <remarks>
-    /// </remarks>
     public static DynamicDictionary ExtendWith(this object obj, string key, object value)
     {
         var dictionary = DAL.Extensions.ToDynamicDictionary(obj);
@@ -55,12 +50,6 @@ public static class Extensions
         return dictionary;
     }
 
-    /// <summary>
-    /// Extend a dynamic dictionary with the given list of key-value pair.
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="properties">A dictionary of key-value pairs.</param>
-    /// <returns></returns>
     public static DynamicDictionary ExtendWith(this object obj, IDictionary<string, object> properties)
     {
         var dictionary = DAL.Extensions.ToDynamicDictionary(obj);
@@ -75,48 +64,35 @@ public static class Extensions
         return dictionary;
     }
 
-    /// <summary>
-    /// Build a conforming entity name from the entity attribute or the type name.
-    /// </summary>
-    /// <param name="obj">The object to build a data service name for.</param>
-    /// <param name="prefix">The data service compliant name prefix.</param>
-    /// <param name="suffix">The data service compliant name suffix.</param>
-    /// <returns>A one-part or two-part data service complaint name for an entity
-    /// as defined byt the attribute or the type.</returns>
-    /// <remarks>Best used as a fallback when the entity name is not explicitly defined.
-    /// </remarks>
     internal static string BuildEntityName(object obj, string prefix, string suffix)
     {
         var type = obj.GetType();
 
         var attribute = (EntityAttribute)TypeDescriptor.GetAttributes(obj)[typeof(EntityAttribute)]!;
 
-        if (attribute == null && (!Attribute.IsDefined(type, typeof(EntityAttribute)) || (attribute = (EntityAttribute)Attribute.GetCustomAttribute(type, typeof(EntityAttribute))!) is null))
+        if (attribute == null && (!Attribute.IsDefined(type, typeof(EntityAttribute)) ||
+           (attribute = (EntityAttribute)Attribute.GetCustomAttribute(type, typeof(EntityAttribute))!) is null))
         {
             return $"{prefix}{type.Name}{suffix}";
         }
 
-        var schema = string.IsNullOrWhiteSpace(attribute.Schema)
-            ? string.Empty
-            : $"{prefix}{attribute.Schema}{suffix}.";
+        var name = new StringBuilder();
+        
+        if (!string.IsNullOrWhiteSpace(attribute.Schema))
+        {
+            name.Append($"{prefix}{attribute.Schema}{suffix}.");
+        }
 
-        return $"{schema}{prefix}{attribute.Table ?? type.Name}{suffix}";
+        name.Append($"{prefix}{(string.IsNullOrWhiteSpace(attribute.Table) ? type.Name : attribute.Table)}{suffix}");
+
+        return name.ToString();
     }
 
-    /// <summary>Maps an <see cref="IDataRecord" /> to a type of <typeparamref name="T" />.</summary>
-    /// <remarks>This method internally uses caching to increase performance.</remarks>
-    /// <typeparam name="T">The type to map to.</typeparam>
-    /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
-    /// <returns>A mapped instance of <typeparamref name="T" />.</returns>
-    /// <exception cref="TypeConversionException">A value cannot be converted.</exception>
-    /// <exception cref="PropertySetValueException">A converted value cannot be assigned to a property.</exception>
-    /// <exception cref="FieldSetValueException">A converted value cannot be assigned to a field.</exception>
     public static T ToObject<T>(this IDataRecord dataRecord)
     {
         var fieldCount = dataRecord.FieldCount;
         var type = typeof(T);
 
-        // Handle mapping to primitives and strings when there is only a single field in the record
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
             return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
@@ -125,15 +101,13 @@ public static class Extensions
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
         var mapped = false;
 
-        // { case-insensitive property/field name, property/field info }
-        var orderedDictionary = TypeCache.GetMetadata(type);
+        var typeMetadata = TypeCache.Get(type);
 
         for (var i = 0; i < fieldCount; i++)
         {
             var fieldName = dataRecord.GetName(i).ToLower();
 
-            // TODO: here's where we'd take advantage of name conversion...
-            var memberInfo = orderedDictionary[fieldName];
+            var memberInfo = typeMetadata[fieldName];
 
             switch (memberInfo)
             {
@@ -141,55 +115,55 @@ public static class Extensions
                 case PropertyInfo { CanWrite: false }:
                     continue;
                 case PropertyInfo propertyInfo:
+                {
+                    if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
                     {
-                        if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
-                        {
-                            continue;
-                        }
-
-                        var value = dataRecord.GetValue(i);
-
-                        var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
-
-                        try
-                        {
-                            propertyInfo.SetValue(obj, convertedValue, null);
-
-                            mapped = true;
-                        }
-                        catch (Exception exception)
-                        {
-                            throw new PropertySetValueException(
-                                $"Unable to assign '{convertedValue}' to {type}.{propertyInfo.Name} ({propertyInfo.PropertyType}).", exception);
-                        }
-
-                        break;
+                        continue;
                     }
+
+                    var value = dataRecord.GetValue(i);
+
+                    var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
+
+                    try
+                    {
+                        propertyInfo.SetValue(obj, convertedValue, null);
+
+                        mapped = true;
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new PropertySetValueException(
+                            $"Unable to assign '{convertedValue}' to {type}.{propertyInfo.Name} ({propertyInfo.PropertyType}).", exception);
+                    }
+
+                    break;
+                }
                 case FieldInfo fieldInfo:
+                {
+                    if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
                     {
-                        if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
-                        {
-                            continue;
-                        }
-
-                        var value = dataRecord.GetValue(i);
-
-                        var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
-
-                        try
-                        {
-                            fieldInfo.SetValue(obj, convertedValue);
-
-                            mapped = true;
-                        }
-                        catch (Exception exception)
-                        {
-                            throw new FieldSetValueException(
-                                $"Error assigning '{value}' to '{type}.{fieldInfo.Name} ({fieldInfo.FieldType})'.", exception);
-                        }
-
-                        break;
+                        continue;
                     }
+
+                    var value = dataRecord.GetValue(i);
+
+                    var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
+
+                    try
+                    {
+                        fieldInfo.SetValue(obj, convertedValue);
+
+                        mapped = true;
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new FieldSetValueException(
+                            $"Error assigning '{value}' to '{type}.{fieldInfo.Name} ({fieldInfo.FieldType})'.", exception);
+                    }
+
+                    break;
+                }
             }
         }
 
