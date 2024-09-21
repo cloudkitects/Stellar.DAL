@@ -15,8 +15,6 @@ public static class TypeCache
     public static readonly Dictionary<Type, OrderedDictionary> Cache = [];
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
-    /// <param name="type">Type.</param>
-    /// <returns><see cref="OrderedDictionary"/> of case-insensitive member names with PropertyInfo and FieldInfo as values.</returns>
     public static OrderedDictionary Get(Type type, Func<MemberInfo, bool> ignore = null)
     {
         if (Cache.TryGetValue(type, out OrderedDictionary value))
@@ -51,15 +49,20 @@ public static class TypeCache
         return typeMetadata;
     }
 
-    /// <summary>Gets a dictionary containing the objects property and field names and values.</summary>
-    /// <param name="instance">Object to get names and values from.</param>
-    /// <returns>Dictionary containing property and field names and values.</returns>
-    public static IDictionary<string, object> GetMetadataAndValues(object instance)
+    /// <summary>Try getting a cached type.</summary>
+    public static bool TryGet(Type type, out OrderedDictionary result)
+    {
+        return Cache.TryGetValue(type, out result);
+    }
+
+
+    /// <summary>Get a dictionary containing the objects property and field names and values.</summary>
+    public static IDictionary<string, object> ToDictionary(object instance)
     {
         // support dynamic objects backed by a dictionary of string object
-        if (instance is IDictionary<string, object> instanceAsDictionary)
+        if (instance is IDictionary<string, object> asDictionary)
         {
-            return instanceAsDictionary;
+            return asDictionary;
         }
 
         var type = instance.GetType();
@@ -77,7 +80,7 @@ public static class TypeCache
                 _ => null
             };
 
-            dictionary.Add(entry.Key.ToString() ?? string.Empty, value);
+            dictionary.Add(entry.Key.ToString(), value);
         }
 
         return dictionary;

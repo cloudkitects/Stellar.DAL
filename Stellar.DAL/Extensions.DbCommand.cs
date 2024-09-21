@@ -276,11 +276,9 @@ public static partial class Extensions
         var columns = new List<string>();
         var values = new List<string>();
 
-        var namesAndValues = TypeCache.GetMetadataAndValues(item);
-
-        foreach (var (key, value) in namesAndValues)
+        foreach (var (key, value) in TypeCache.ToDictionary(item))
         {
-            if (value == null)
+            if (value is null)
             {
                 continue;
             }

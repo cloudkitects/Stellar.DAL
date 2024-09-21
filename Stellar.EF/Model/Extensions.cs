@@ -133,8 +133,7 @@ public static class Extensions
                     }
                     catch (Exception exception)
                     {
-                        throw new PropertySetValueException(
-                            $"Unable to assign '{convertedValue}' to {type}.{propertyInfo.Name} ({propertyInfo.PropertyType}).", exception);
+                        throw new PropertySetValueException(propertyInfo, convertedValue, exception);
                     }
 
                     break;
@@ -158,8 +157,7 @@ public static class Extensions
                     }
                     catch (Exception exception)
                     {
-                        throw new FieldSetValueException(
-                            $"Error assigning '{value}' to '{type}.{fieldInfo.Name} ({fieldInfo.FieldType})'.", exception);
+                        throw new FieldSetValueException(fieldInfo, value, exception);
                     }
 
                     break;
@@ -177,7 +175,7 @@ public static class Extensions
     /// <returns><see cref="OrderedDictionary"/> of case-insensitive member names with PropertyInfo and FieldInfo as values.</returns>
     public static OrderedDictionary GetEntityMetadata(Type type)
     {
-        if (TypeCache.Cache.TryGetValue(type, out OrderedDictionary? value))
+        if (TypeCache.TryGet(type, out OrderedDictionary? value))
         {
             return value;
         }
@@ -236,7 +234,7 @@ public static class Extensions
             var mapped = false;
 
             // { case-insensitive property/field name, property/field info }
-            var orderedDictionary = TypeCache.GetMetadata(type);
+            var orderedDictionary = TypeCache.Get(type);
 
             for (var i = 0; i < fieldCount; i++)
             {
@@ -269,8 +267,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new PropertySetValueException(
-                                $"Unable to assign '{convertedValue}' to {type}.{propertyInfo.Name} ({propertyInfo.PropertyType}).", exception);
+                            throw new PropertySetValueException(propertyInfo, convertedValue, exception);
                         }
 
                         break;
@@ -294,8 +291,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new FieldSetValueException(
-                                $"Error assigning '{value}' to '{type}.{fieldInfo.Name} ({fieldInfo.FieldType})'.", exception);
+                            throw new FieldSetValueException(fieldInfo, value, exception);
                         }
 
                         break;
@@ -304,8 +300,8 @@ public static class Extensions
             }
 
             return mapped || fieldCount != 1
-                ? (T)obj
-                : (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+                ? (T)obj!
+                : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
         }
 
 }

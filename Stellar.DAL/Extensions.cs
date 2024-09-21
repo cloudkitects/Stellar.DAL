@@ -129,7 +129,7 @@ public static partial class Extensions
     /// <returns>The object converted to a dynamic dictionary.</returns>
     public static DynamicDictionary ToDynamicDictionary(this object obj)
     {
-        return new(TypeCache.GetMetadataAndValues(obj));
+        return new(TypeCache.ToDictionary(obj));
     }
     #endregion
 
