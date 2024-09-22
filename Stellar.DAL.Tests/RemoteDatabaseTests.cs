@@ -1,23 +1,29 @@
 ﻿namespace Stellar.DAL.Tests;
 
-//[Collection("Remote Database collection")]
-//public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
-//{
-//    readonly RemoteDatabaseFixture database = fixture;
+[Collection("Remote Database collection")]
+public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
+{
+    readonly RemoteDatabaseFixture database = fixture;
 
-//    #region Execute
-//    /// <summary>
-//    /// Execute round-trip DML.
-//    /// </summary>
-//    [Fact]
-//    public void ExecuteToList()
-//    {
-//        var sql = "SELECT * FROM cfg.SourceMetadata s WHERE s.Isenabled = 1;";
+    #region Execute
+    /// <summary>
+    /// Executes to dynamic list.
+    /// </summary>
+    [Theory]
+    [InlineData(1, "Mr. Orlando N. Gee")]
+    [InlineData(529, "Ms. Jeanie R. Glenn PhD")]
+    public void ExecutesToDynamicList(int customerId, string fullName)
+    {
+        var sql = $"SELECT * FROM [SalesLT].[Customer] WHERE CustomerID = {customerId};";
 
-//        var list = database.GetCommand()
-//            .SetCommandText(sql)
-//            .ExecuteToDynamicList();
-//    }
-//    #endregion
+        var list = database.GetCommand()
+            .SetCommandText(sql)
+            .ExecuteToDynamicList();
 
-//}
+        var customer = list[0];
+
+        Assert.Equal(fullName, $"{customer.Title} {customer.FirstName} {customer.MiddleName} {customer.LastName} {customer.Suffix}".Trim());
+    }
+    #endregion
+
+}

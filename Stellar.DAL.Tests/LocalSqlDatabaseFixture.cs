@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 
 namespace Stellar.DAL.Tests;
 
@@ -39,7 +39,7 @@ public class LocalSqlDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return new DbClient<SqlConnection>(_connectionString).GetCommand();
+        return new DatabaseClient<SqlConnection>(_connectionString).GetCommand();
     }
 
     public long ExecuteNonQuery(string sql)

@@ -1,6 +1,7 @@
-﻿using System.Data;
-using System.Data.SqlClient;
-using System.Transactions;
+﻿using System.Transactions;
+
+using Microsoft.Data.SqlClient;
+
 using Stellar.DAL.Tests.Data;
 
 namespace Stellar.DAL.Tests;
@@ -21,7 +22,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
         var debugInfo = command.GetDebugInfo();
 
         Assert.True(debugInfo.CommandParameterCount >= 3);
-        Assert.Equal(ConnectionState.Closed, debugInfo.ConnectionState);
+        Assert.Equal(System.Data.ConnectionState.Closed, debugInfo.ConnectionState);
     }
     #endregion
 
@@ -79,7 +80,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
 
         command.ExecuteScalar(true);
 
-        Assert.Equal(ConnectionState.Open, command.DbCommand?.Connection?.State);
+        Assert.Equal(System.Data.ConnectionState.Open, command.DbCommand?.Connection?.State);
 
         command.Dispose();
     }

@@ -4,9 +4,9 @@ public abstract class ValueObject<T> where T : ValueObject<T>
 {
     protected abstract IEnumerable<object> GetEqualityComponents();
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (!(obj is T valueObject))
+        if (obj is not T valueObject)
         {
             return false;
         }
