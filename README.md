@@ -1,5 +1,5 @@
 # Stellar Data Access Layer
-The evolution of Randy Burden's [Sequelocity.NET]([url](https://github.com/randyburden/Sequelocity.NET)).
+The evolution of Randy Burden's [Sequelocity.NET](https://github.com/randyburden/Sequelocity.NET).
 
 Beyond trying to keep up with .NET and data access libraries' upgrades and splitting code into multiple files, this DAL attempts to (1) include Snowflake, (2) enhance auto-mapping and (3) encapsulate an Entity Framework.
 
