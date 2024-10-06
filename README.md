@@ -5,5 +5,7 @@ Beyond trying to keep up with .NET and data access libraries' upgrades and split
 
 The database-agnostic `DatabaseClient` takes in a connection string and exposes the APIs for almost every database interaction, yet it **does not** build a connection string or read it from configuration files or the options pattern app settings.
 
-Users are free to use the System's data `DbConnection` object to build a connection string and pass the result to the client, but simple string interpolation works as well.
+Users are free to use the System's data `DbConnection` object to build a connection string and pass the result to the client, but simple string interpolation works as well:
+
+https://github.com/cloudkitects/Stellar.DAL/blob/bf5a8f9a912ddd37e04c8b17689c160753e29ac0/Stellar.DAL.Tests/DbClientTests.cs#L7-19
 
