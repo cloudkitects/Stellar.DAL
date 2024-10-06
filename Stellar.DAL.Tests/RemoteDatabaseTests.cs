@@ -17,6 +17,7 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
         var sql = $"SELECT * FROM [SalesLT].[Customer] WHERE CustomerID = {customerId};";
 
         var list = database.GetCommand()
+            .SetCommandTimeout(60)
             .SetCommandText(sql)
             .ExecuteToDynamicList();
 
