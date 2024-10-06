@@ -1,29 +1,31 @@
-﻿namespace Stellar.DAL.Tests
+﻿namespace Stellar.DAL.Tests;
+
+[Collection("Remote Database collection")]
+public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
 {
-    [Collection("Remote Database collection")]
-    public class RemoteDatabaseTests
+    readonly RemoteDatabaseFixture database = fixture;
+
+    #region Execute
+    /// <summary>
+    /// Executes to dynamic list.
+    /// </summary>
+    [Theory]
+    [InlineData(1, "Mr. Orlando N. Gee")]
+    [InlineData(529, "Ms. Jeanie R. Glenn PhD")]
+    public void ExecutesToDynamicList(int customerId, string fullName)
     {
-        readonly RemoteDatabaseFixture database;
+        var sql = $"SELECT * FROM [SalesLT].[Customer] WHERE CustomerID = {customerId};";
 
-        public RemoteDatabaseTests(RemoteDatabaseFixture fixture)
-        {
-            database = fixture;
-        }
+        var list = database.GetCommand()
+            .SetCommandText(sql)
+            .ExecuteToDynamicList();
 
-        #region Execute
-        /// <summary>
-        /// Execute round-trip DML.
-        /// </summary>
-        [Fact]
-        public void ExecuteToList()
-        {
-            var sql = "SELECT * FROM cfg.SourceMetadata s WHERE s.Isenabled = 1;";
+        var customer = list[0];
 
-            var list = database.GetCommand()
-                .SetCommandText(sql)
-                .ExecuteToDynamicList();
-        }
-        #endregion
+        customer.FullName = $"{customer.Title} {customer.FirstName} {customer.MiddleName} {customer.LastName} {customer.Suffix}".Trim();
 
+        Assert.Equal(fullName, customer.FullName);
     }
+    #endregion
+
 }

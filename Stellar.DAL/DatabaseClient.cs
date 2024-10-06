@@ -1,129 +1,64 @@
 ﻿using System;
 using System.Data.Common;
-using System.Data.Odbc;
-using System.Data.SqlClient;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
-[assembly:InternalsVisibleTo("Stellar.DAL.Tests")]
-namespace Stellar.DAL
+using Microsoft.Data.SqlClient;
+
+[assembly: InternalsVisibleTo("Stellar.DAL.Tests")]
+namespace Stellar.DAL;
+
+/// <summary>
+/// Wrapper class for this library.
+/// </summary>
+public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationParameters, CancellationToken, Task<SqlAuthenticationToken>> accessTokenCallback = null) where T : DbConnection, new()
 {
-    /// <summary>
-    /// Wrapper class for this library.
-    /// </summary>
-    public class DatabaseClient(string connectionString, Rdbms rdbms = Rdbms.SqlServer, string accessToken = null)
+    #region Create Connection
+    /// <summary>Creates a <see cref="DbConnection" of the specified subtype />.</summary>
+    public T CreateConnection()
     {
-        
-        #region Create Connection
-        /// <summary>Creates a <see cref="DbConnection" of the specified subtype />.</summary>
-        /// <returns>A new <see cref="DbConnection" /> instance.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
-        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
-        public DbConnection CreateConnection()
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+
+        T connection;
+
+        if (typeof(T) == typeof(SqlConnection) && accessTokenCallback is not null)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
+            connection = new SqlConnection()
             {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            return rdbms switch
+                ConnectionString = connectionString,
+                AccessTokenCallback = accessTokenCallback
+            } as T;
+        }
+        else
+        {
+            connection = new T()
             {
-                Rdbms.Odbc => CreateOdbcConnection(),
-                Rdbms.SqlServer => CreateSqlConnection(),
-
-                Rdbms.MySql => throw new NotImplementedException(),
-                Rdbms.SQLite => throw new NotImplementedException(),
-                Rdbms.Postgres => throw new NotImplementedException(),
-         
-                _ => throw new NotImplementedException()
+                ConnectionString = connectionString
             };
         }
 
-        /// <summary>Creates a <see cref="SqlConnection" />.</summary>
-        /// <returns>A new <see cref="DbConnection" /> instance.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
-        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
-        public DbConnection CreateSqlConnection()
-        {
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            var connection = new SqlConnection
-            {
-                AccessToken = accessToken,
-                ConnectionString = connectionString
-            } ?? throw new Exception($"Unable to create a {typeof(SqlConnection)} with the provided values.");
-            
-            // TODO: why?
-            connection.ConnectionString = connectionString;
-
-            return connection;
-        }
-
-        /// <summary>Creates a <see cref="OdbcConnection" />.</summary>
-        /// <returns>A new <see cref="DbConnection" /> instance.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="connectionString" /> parameter is null.</exception>
-        /// <exception cref="Exception">An unknown error occurred creating a SQL connection</exception>
-        public DbConnection CreateOdbcConnection()
-        {
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            var connection = new OdbcConnection
-            {
-                ConnectionString = connectionString,
-                
-            } ?? throw new Exception($"Unable to create a {typeof(OdbcConnection)} with the provided values.");
-            
-            // TODO: why, again?
-            connection.ConnectionString = connectionString;
-
-            return connection;
-        }
-        #endregion
-
-        #region Get Command
-        /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbCommand" /> instance.</summary>
-        /// <param name="dbCommand"><see cref="DbCommand" /> instance.</param>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        public static DatabaseCommand GetCommand(DbCommand dbCommand)
-        {
-            return new(dbCommand);
-        }
-
-        /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbConnection" /> instance.</summary>
-        /// <param name="dbConnection"><see cref="DbConnection" /> instance.</param>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="dbConnection" /> parameter is null.</exception>
-        public static DatabaseCommand GetCommand(DbConnection dbConnection)
-        {
-            return new(dbConnection);
-        }
-
-        /// <summary>Attempts to get a <see cref="DatabaseCommand" /> using several strategies.</summary>
-        /// <returns>A new <see cref="DatabaseCommand" /> instance.</returns>
-        /// <exception cref="Exception">
-        /// Thrown when no ConnectionString could be found. A valid ConnectionString or Connection String Name must be supplied in
-        /// the 'connectionString' parameter or by setting a default in either the
-        /// 'DatabaseCommand.ConfigurationSettings.Default.ConnectionStringName' or
-        /// 'DatabaseCommand.ConfigurationSettings.Default.ConnectionString' properties.
-        /// </exception>
-        /// <exception cref="DatabaseCommand.DbCommand">
-        /// Thrown when no DbProviderFactory could be found. A DbProviderFactory invariant name must be supplied in the connection
-        /// string settings 'providerName' attribute in the applications config file, in the 'dbProviderFactoryInvariantName'
-        /// parameter, or by setting a default in the
-        /// 'DatabaseCommand.ConfigurationSettings.Default.DbProviderFactoryInvariantName' property.
-        /// </exception>
-        /// <exception cref="DatabaseCommand">
-        /// An unknown error occurred creating a connection as the call to DbProviderFactory.CreateConnection() returned null.
-        /// </exception>
-        public DatabaseCommand GetCommand()
-        {
-            return new(CreateConnection());
-        }
-        #endregion
+        return connection;
     }
+    #endregion
+
+    #region Get Command
+    /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbCommand" /> instance.</summary>
+    public static DatabaseCommand GetCommand(DbCommand dbCommand)
+    {
+        return new(dbCommand);
+    }
+
+    /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbConnection" /> instance.</summary>
+    public static DatabaseCommand GetCommand(DbConnection dbConnection)
+    {
+        return new(dbConnection);
+    }
+
+    /// <summary>Get a <see cref="DatabaseCommand" /> based on creation time parameters.</summary>
+    public DatabaseCommand GetCommand()
+    {
+        return new(CreateConnection());
+    }
+    #endregion
 }

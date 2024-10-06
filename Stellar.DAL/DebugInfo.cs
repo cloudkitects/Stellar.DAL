@@ -1,20 +1,19 @@
 ﻿using System.Data;
 
-namespace Stellar.DAL
+namespace Stellar.DAL;
+
+/// <summary>
+/// An object with host, connection and command information.
+/// </summary>
+internal class DebugInfo
 {
-    /// <summary>
-    /// An object with host, connection and command information.
-    /// </summary>
-    internal class DebugInfo
-    {
-        public string MachineName;
-        public string HostName;
-        public string DataSource;
-        public string Database;
-        public string ConnectionString;
-        public ConnectionState ConnectionState;
-        public int CommandTimeout;
-        public int CommandParameterCount;
-        public string AnnotatedCommandText;
-    }
+    public string MachineName;
+    public string HostName;
+    public string DataSource;
+    public string Database;
+    public string ConnectionString;
+    public ConnectionState ConnectionState;
+    public int CommandTimeout;
+    public int CommandParameterCount;
+    public string AnnotatedCommandText;
 }

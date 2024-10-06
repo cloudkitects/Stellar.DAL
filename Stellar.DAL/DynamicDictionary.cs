@@ -24,6 +24,9 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
 {
     protected readonly IDictionary<string, object> Dictionary = dictionary ?? new DefaultValueDictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
 
+    #region constructor
+    #endregion
+
     #region DynamicObject Overrides
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
@@ -48,12 +51,12 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
 
     public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
     {
-        if (!Dictionary.ContainsKey(binder.Name) || !(Dictionary[binder.Name] is Delegate))
+        if (!Dictionary.TryGetValue(binder.Name, out object value) || value is not Delegate)
         {
             return base.TryInvokeMember(binder, args, out result);
         }
 
-        var delegateValue = Dictionary[binder.Name] as Delegate;
+        var delegateValue = value as Delegate;
 
         result = delegateValue?.DynamicInvoke(args);
 
@@ -79,16 +82,32 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
 /// </example>
 public class DynamicDictionary(IDictionary<string, object> dictionary = null) : DynamicInstance(dictionary), IDictionary<string, object>
 {
-    #region IDictionary<string, object> Members
-    public void Add(string key, object value) => Dictionary.Add(key, value);
 
-    public bool ContainsKey(string key) => Dictionary.ContainsKey(key);
+    #region constructor
+    #endregion
+
+    #region IDictionary<string, object> Members
+    public void Add(string key, object value)
+    {
+        Dictionary.Add(key, value);
+    }
+
+    public bool ContainsKey(string key)
+    {
+        return Dictionary.ContainsKey(key);
+    }
 
     public ICollection<string> Keys => Dictionary.Keys;
 
-    public bool Remove(string key) => Dictionary.Remove(key);
+    public bool Remove(string key)
+    {
+        return Dictionary.Remove(key);
+    }
 
-    public bool TryGetValue(string key, out object value) => Dictionary.TryGetValue(key, out value);
+    public bool TryGetValue(string key, out object value)
+    {
+        return Dictionary.TryGetValue(key, out value);
+    }
 
     public ICollection<object> Values => Dictionary.Values;
 
@@ -105,26 +124,47 @@ public class DynamicDictionary(IDictionary<string, object> dictionary = null) : 
     #endregion
 
     #region ICollection<KeyValuePair<string, object>> Members
-    public void Add(KeyValuePair<string, object> item) => Dictionary.Add(item);
+    public void Add(KeyValuePair<string, object> item)
+    {
+        Dictionary.Add(item);
+    }
 
-    public void Clear() => Dictionary.Clear();
+    public void Clear()
+    {
+        Dictionary.Clear();
+    }
 
-    public bool Contains(KeyValuePair<string, object> item) => Dictionary.Contains(item);
+    public bool Contains(KeyValuePair<string, object> item)
+    {
+        return Dictionary.Contains(item);
+    }
 
-    public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => Dictionary.CopyTo(array, arrayIndex);
+    public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+    {
+        Dictionary.CopyTo(array, arrayIndex);
+    }
 
     public int Count => Dictionary.Count;
 
     public bool IsReadOnly => Dictionary.IsReadOnly;
 
-    public bool Remove(KeyValuePair<string, object> item) => Dictionary.Remove(item);
+    public bool Remove(KeyValuePair<string, object> item)
+    {
+        return Dictionary.Remove(item);
+    }
     #endregion
 
     #region IEnumerable<KeyValuePair<string,object>> Members
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Dictionary.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+    {
+        return Dictionary.GetEnumerator();
+    }
     #endregion
 
     #region IEnumerable Members
-    IEnumerator IEnumerable.GetEnumerator() => Dictionary.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return Dictionary.GetEnumerator();
+    }
     #endregion
 }
