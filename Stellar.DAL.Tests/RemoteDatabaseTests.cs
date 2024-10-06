@@ -22,7 +22,9 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
 
         var customer = list[0];
 
-        Assert.Equal(fullName, $"{customer.Title} {customer.FirstName} {customer.MiddleName} {customer.LastName} {customer.Suffix}".Trim());
+        customer.FullName = $"{customer.Title} {customer.FirstName} {customer.MiddleName} {customer.LastName} {customer.Suffix}".Trim();
+
+        Assert.Equal(fullName, customer.FullName);
     }
     #endregion
 

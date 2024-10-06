@@ -77,7 +77,7 @@ public static class Extensions
         }
 
         var name = new StringBuilder();
-        
+
         if (!string.IsNullOrWhiteSpace(attribute.Schema))
         {
             name.Append($"{prefix}{attribute.Schema}{suffix}.");
@@ -115,53 +115,53 @@ public static class Extensions
                 case PropertyInfo { CanWrite: false }:
                     continue;
                 case PropertyInfo propertyInfo:
-                {
-                    if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
                     {
-                        continue;
+                        if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
+                        {
+                            continue;
+                        }
+
+                        var value = dataRecord.GetValue(i);
+
+                        var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
+
+                        try
+                        {
+                            propertyInfo.SetValue(obj, convertedValue, null);
+
+                            mapped = true;
+                        }
+                        catch (Exception exception)
+                        {
+                            throw new PropertySetValueException(propertyInfo, convertedValue, exception);
+                        }
+
+                        break;
                     }
-
-                    var value = dataRecord.GetValue(i);
-
-                    var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
-
-                    try
-                    {
-                        propertyInfo.SetValue(obj, convertedValue, null);
-
-                        mapped = true;
-                    }
-                    catch (Exception exception)
-                    {
-                        throw new PropertySetValueException(propertyInfo, convertedValue, exception);
-                    }
-
-                    break;
-                }
                 case FieldInfo fieldInfo:
-                {
-                    if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
                     {
-                        continue;
+                        if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
+                        {
+                            continue;
+                        }
+
+                        var value = dataRecord.GetValue(i);
+
+                        var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
+
+                        try
+                        {
+                            fieldInfo.SetValue(obj, convertedValue);
+
+                            mapped = true;
+                        }
+                        catch (Exception exception)
+                        {
+                            throw new FieldSetValueException(fieldInfo, value, exception);
+                        }
+
+                        break;
                     }
-
-                    var value = dataRecord.GetValue(i);
-
-                    var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
-
-                    try
-                    {
-                        fieldInfo.SetValue(obj, convertedValue);
-
-                        mapped = true;
-                    }
-                    catch (Exception exception)
-                    {
-                        throw new FieldSetValueException(fieldInfo, value, exception);
-                    }
-
-                    break;
-                }
             }
         }
 
@@ -211,44 +211,44 @@ public static class Extensions
         return orderedDictionary;
     }
 
-            /// <summary>Maps an <see cref="IDataRecord" /> to a type of <typeparamref name="T" />.</summary>
-        /// <remarks>This method internally uses caching to increase performance.</remarks>
-        /// <typeparam name="T">The type to map to.</typeparam>
-        /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
-        /// <returns>A mapped instance of <typeparamref name="T" />.</returns>
-        /// <exception cref="TypeConversionException">A value cannot be converted.</exception>
-        /// <exception cref="PropertySetValueException">A converted value cannot be assigned to a property.</exception>
-        /// <exception cref="FieldSetValueException">A converted value cannot be assigned to a field.</exception>
-        public static T ToEntity<T>(this IDataRecord dataRecord)
+    /// <summary>Maps an <see cref="IDataRecord" /> to a type of <typeparamref name="T" />.</summary>
+    /// <remarks>This method internally uses caching to increase performance.</remarks>
+    /// <typeparam name="T">The type to map to.</typeparam>
+    /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
+    /// <returns>A mapped instance of <typeparamref name="T" />.</returns>
+    /// <exception cref="TypeConversionException">A value cannot be converted.</exception>
+    /// <exception cref="PropertySetValueException">A converted value cannot be assigned to a property.</exception>
+    /// <exception cref="FieldSetValueException">A converted value cannot be assigned to a field.</exception>
+    public static T ToEntity<T>(this IDataRecord dataRecord)
+    {
+        var fieldCount = dataRecord.FieldCount;
+        var type = typeof(T);
+
+        // Handle mapping to primitives and strings when there is only a single field in the record
+        if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            var fieldCount = dataRecord.FieldCount;
-            var type = typeof(T);
+            return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+        }
 
-            // Handle mapping to primitives and strings when there is only a single field in the record
-            if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
+        var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
+        var mapped = false;
+
+        // { case-insensitive property/field name, property/field info }
+        var orderedDictionary = TypeCache.Get(type);
+
+        for (var i = 0; i < fieldCount; i++)
+        {
+            var fieldName = dataRecord.GetName(i).ToLower();
+
+            // TODO: here's where we'd take advantage of name conversion...
+            var memberInfo = orderedDictionary[fieldName];
+
+            switch (memberInfo)
             {
-                return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
-            }
-
-            var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
-            var mapped = false;
-
-            // { case-insensitive property/field name, property/field info }
-            var orderedDictionary = TypeCache.Get(type);
-
-            for (var i = 0; i < fieldCount; i++)
-            {
-                var fieldName = dataRecord.GetName(i).ToLower();
-
-                // TODO: here's where we'd take advantage of name conversion...
-                var memberInfo = orderedDictionary[fieldName];
-
-                switch (memberInfo)
-                {
-                    case null:
-                    case PropertyInfo {CanWrite: false}:
-                        continue;
-                    case PropertyInfo propertyInfo:
+                case null:
+                case PropertyInfo { CanWrite: false }:
+                    continue;
+                case PropertyInfo propertyInfo:
                     {
                         if (Attribute.IsDefined(propertyInfo, typeof(IgnoreAttribute)))
                         {
@@ -272,13 +272,13 @@ public static class Extensions
 
                         break;
                     }
-                    case FieldInfo fieldInfo:
+                case FieldInfo fieldInfo:
                     {
                         if (Attribute.IsDefined(fieldInfo, typeof(IgnoreAttribute)))
                         {
                             continue;
                         }
-                        
+
                         var value = dataRecord.GetValue(i);
 
                         var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
@@ -296,12 +296,12 @@ public static class Extensions
 
                         break;
                     }
-                }
             }
-
-            return mapped || fieldCount != 1
-                ? (T)obj!
-                : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
         }
+
+        return mapped || fieldCount != 1
+            ? (T)obj!
+            : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
+    }
 
 }

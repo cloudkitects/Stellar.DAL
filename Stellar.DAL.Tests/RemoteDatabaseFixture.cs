@@ -1,9 +1,8 @@
-﻿using Azure.Core;
-using Azure.Identity;
+﻿using System.Collections.Concurrent;
 
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Data.SqlClient;
-using Microsoft.Identity.Client;
-using System.Collections.Concurrent;
 
 namespace Stellar.DAL.Tests;
 
@@ -22,39 +21,23 @@ public class RemoteDatabaseFixture : IDisposable
     }
 
     #region helpers
-    public static async Task<string> GetToken()
-    {
-
-        //var result = await client.AcquireTokenForClient(scopes: [ "https://database.windows.net/.default" ])
-        //    .ExecuteAsync()
-        //    ?? throw new InvalidOperationException("Unable to acquire a database token.");
-
-        //return result.AccessToken;
-
-        var tokenCredential = new DefaultAzureCredential();
-
-        var result = await tokenCredential.GetTokenAsync(
-            new TokenRequestContext(scopes: ["https://database.windows.net/.default"]) { });
-
-        return result.Token;
-    }
-
     // a shared callback ensures connections are created in the same pool
     private static readonly Func<SqlAuthenticationParameters, CancellationToken, Task<SqlAuthenticationToken>> GetTokenCallback =
         async (authParams, cancellationToken) =>
         {
+            //auth params are derived from the connection string
             var scope = authParams.Resource.EndsWith(defaultScopeSuffix)
                 ? authParams.Resource
                 : $"{authParams.Resource}{defaultScopeSuffix}";
 
             var options = new DefaultAzureCredentialOptions
             {
+                ExcludeEnvironmentCredential = true,
                 TenantId = "7e0542af-25b3-485a-b072-e010f52803b3",
-                ManagedIdentityClientId = authParams.UserId,
-                ExcludeEnvironmentCredential = true
+                ManagedIdentityClientId = authParams.UserId
             };
 
-            // Reuse credentials if we are using the same MI Client Id
+            // cached credentials will exist the second time around for the same user managed identity
             var token = await credentials.GetOrAdd(authParams.UserId, new DefaultAzureCredential(options)).GetTokenAsync(
                 new TokenRequestContext([ scope ]),
                 cancellationToken);

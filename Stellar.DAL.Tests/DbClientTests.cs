@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Stellar.DAL.Tests;
+﻿namespace Stellar.DAL.Tests;
 internal class DbClientTests
 {
 }
