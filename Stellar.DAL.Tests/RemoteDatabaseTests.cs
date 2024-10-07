@@ -14,11 +14,12 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
     [InlineData(529, "Ms. Jeanie R. Glenn PhD")]
     public void ExecutesToDynamicList(int customerId, string fullName)
     {
-        var sql = $"SELECT * FROM [SalesLT].[Customer] WHERE CustomerID = {customerId};";
+        var sql = "SELECT * FROM [SalesLT].[Customer] WHERE CustomerID = @customerId;";
 
         var list = database.GetCommand()
             .SetCommandTimeout(60)
             .SetCommandText(sql)
+            .AddParameter("@customerId", customerId, System.Data.DbType.Int32)
             .ExecuteToDynamicList();
 
         var customer = list[0];
