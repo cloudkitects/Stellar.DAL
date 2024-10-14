@@ -29,7 +29,7 @@ The specialized `AzureDatabaseClient` derives from the generic class, takes in a
 If everything's setup correctly in Azure, all you need is a managed identity resource, e.g:
 
 ```cs
-    private readonly string _connectionString = "" +
+    private readonly string _connectionString =
         "Server=tcp:<server_name>.database.windows.net;" +
         "Database=AdventureWorks;" +
         "User Id=<MANAGED_IDENTITY_CLIENT_ID>;" +
@@ -66,3 +66,5 @@ var connectionString = "Server=<server_name.database.windows.net>,1433;Initial C
 The remote database fixture tests are tied to specific Azure subscription and Azure SQL Server and will fail. Besides installing the latest `Az.Accounts` PowerShell module, issuing an `az login` and selecting the right subscription, currently a subscription admin or owner has to add a firewall rule.
 
 We're considering adding a broad rule or creating a private endpoint, but please consider excluding them with a trait or using (or setting up) your own Azure subscription and tests in the meantime. Read other sections regarding procuring a managed identity.
+
+Tests are likely to fail initially for serverless databases. Consider increasing the timeout or rerunning them with timeout exceptions.
