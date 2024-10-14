@@ -22,7 +22,7 @@ public void ConnectsToLocalDb()
     Assert.Equal(1, cmd.ExecuteScalar()); 
 }
 ```
-## USer managed identity authentication flow
+## User managed identity authentication flow
 
 The specialized `AzureDatabaseClient` derives from the generic class, takes in a connection string and wraps the token callback and caching logic.
 
@@ -30,7 +30,7 @@ If everything's setup correctly in Azure, all you need is a managed identity res
 
 ```cs
     private readonly string _connectionString = "" +
-        "Server=tcp:stellardev.database.windows.net;" +
+        "Server=tcp:<server_name>.database.windows.net;" +
         "Database=AdventureWorks;" +
         "User Id=<MANAGED_IDENTITY_CLIENT_ID>;" +
         "Encrypt=True;";
@@ -38,13 +38,12 @@ If everything's setup correctly in Azure, all you need is a managed identity res
 
 The underlying system libraries derive the resource and the tenant Id out of the connection string.
 
-> [!TIP]
-> This authentication flow _should_ work for app registrations, except that app registrations are Microsoft Entra (former Active Directory) principals. You'll need extra some steps on your machine and on the database tself&mdash;see the next section.
-
 ## App registration authetication flow
 
-You can optionally setup system environment variables for the credential to&mdash;ahem&mdash;avoid hardcoding them (never mind pushing them: the git commit history is unforgiving):
- 
+App registrations are Microsoft Entra (former Active Directory) principals. You'll need extra some steps on your machine and on the database itself.
+
+It is strongly recommended to setup system environment variables for the credentials. Avoid hardcoding them, never mind pushing them: the git commit history is unforgiving.
+
 ![image](https://github.com/user-attachments/assets/f98484c2-a227-45f6-9f99-7e12e7c46f48)
 
 You must register the identity on the database itself: 
@@ -64,4 +63,6 @@ var connectionString = "Server=<server_name.database.windows.net>,1433;Initial C
 
 ## Azure authentication caveats
 
-The remote database fixture tests are tied to specific Azure subscription and Azure SQL Server and will fail. Besides installing the latest `Az.Accounts` PowerShell module, issuing an `az login` and selecting the right subscription, currently a subscription admin or owner has to add a firewall rule. We're considering adding a broad rule or creating a private endpoint, but please consider excluding them with a trait or using (or setting up) your own Azure subscription and tests in the meantime. Read other sections regarding procuring a managed identity.
+The remote database fixture tests are tied to specific Azure subscription and Azure SQL Server and will fail. Besides installing the latest `Az.Accounts` PowerShell module, issuing an `az login` and selecting the right subscription, currently a subscription admin or owner has to add a firewall rule.
+
+We're considering adding a broad rule or creating a private endpoint, but please consider excluding them with a trait or using (or setting up) your own Azure subscription and tests in the meantime. Read other sections regarding procuring a managed identity.
