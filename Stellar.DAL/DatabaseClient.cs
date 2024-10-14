@@ -44,13 +44,13 @@ public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationPa
 
     #region Get Command
     /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbCommand" /> instance.</summary>
-    public static DatabaseCommand GetCommand(DbCommand dbCommand)
+    public DatabaseCommand GetCommand(DbCommand dbCommand)
     {
         return new(dbCommand);
     }
 
     /// <summary>Gets a <see cref="DatabaseCommand" /> given a <see cref="DbConnection" /> instance.</summary>
-    public static DatabaseCommand GetCommand(DbConnection dbConnection)
+    public DatabaseCommand GetCommand(DbConnection dbConnection)
     {
         return new(dbConnection);
     }
