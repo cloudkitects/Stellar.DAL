@@ -40,9 +40,9 @@ The underlying system libraries derive the resource and the tenant Id out of the
 
 ## App registration authetication flow
 
-App registrations are Microsoft Entra (former Active Directory) principals. You'll need extra some steps on your machine and on the database itself.
+App registrations are Microsoft Entra (former Active Directory) principals. You'll need afew extra steps on your machine and on the database itself.
 
-It is strongly recommended to setup system environment variables for the credentials. Avoid hardcoding them, never mind pushing them: the git commit history is unforgiving.
+It is strongly recommended to setup system environment variables for the credentials. Avoid hardcoding them, never mind pushing them (the git commit history is unforgiving).
 
 ![image](https://github.com/user-attachments/assets/f98484c2-a227-45f6-9f99-7e12e7c46f48)
 
@@ -52,19 +52,22 @@ You must register the identity on the database itself:
 CREATE USER [your_app_name] FROM EXTERNAL PROVIDER;
 
 -- add to roles as needed
-ALTER ROLE [db_datareader] ADD MEMBER [your_app_name];
-ALTER ROLE [db_datawriter] ADD MEMBER [your_app_name];
+ALTER ROLE <db_datareader> ADD MEMBER <your_app_name>;
+ALTER ROLE <db_datawriter> ADD MEMBER <your_app_name>;
+
+-- grant permissions as needed
+GRANT VIEW DEFINITION [ON <object>] TO <your_app_name>;
 ```
-After that, thanks to the underlying default credentials flow, your connection string is a lot more secure:
+Thanks to all of that (and the underlying default credentials flow) your connection string becomes a lot more secure:
 
 ```sql
 var connectionString = "Server=<server_name.database.windows.net>,1433;Initial Catalog=<database_name>;Connect Timeout=30"
 ```
 
 ## Azure authentication caveats
+the API
+The remote database fixture tests are tied to a specific Azure subscription and Azure SQL Server, and therefore will fail from your box. Besides installing the latest `Az.Accounts` PowerShell module, issuing an `az login` and selecting the right subscription, currently a subscription admin or owner has to add a firewall rule.
 
-The remote database fixture tests are tied to specific Azure subscription and Azure SQL Server and will fail. Besides installing the latest `Az.Accounts` PowerShell module, issuing an `az login` and selecting the right subscription, currently a subscription admin or owner has to add a firewall rule.
+We're considering adding a broad rule, but please consider excluding them with a trait or setting up your own trial Azure subscription and managed identity in the meantime.
 
-We're considering adding a broad rule or creating a private endpoint, but please consider excluding them with a trait or using (or setting up) your own Azure subscription and tests in the meantime. Read other sections regarding procuring a managed identity.
-
-Tests are likely to fail initially for serverless databases. Consider increasing the timeout or rerunning them if/when they throw timeout exceptions.
+Remote tests are known to time out initially for serverless databases. Consider increasing the timeout in the connection string or the API calls and rerunning them if/when timeout exceptions are thrown.
