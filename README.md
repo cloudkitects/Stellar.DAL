@@ -67,4 +67,4 @@ The remote database fixture tests are tied to specific Azure subscription and Az
 
 We're considering adding a broad rule or creating a private endpoint, but please consider excluding them with a trait or using (or setting up) your own Azure subscription and tests in the meantime. Read other sections regarding procuring a managed identity.
 
-Tests are likely to fail initially for serverless databases. Consider increasing the timeout or rerunning them with timeout exceptions.
+Tests are likely to fail initially for serverless databases. Consider increasing the timeout or rerunning them if/when they throw timeout exceptions.
