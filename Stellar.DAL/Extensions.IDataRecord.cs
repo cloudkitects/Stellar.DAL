@@ -171,9 +171,9 @@ public static partial class Extensions
     /// Maps <see cref="IDataRecord" /> to an internal dynamic dictionary with no
     /// other conversion than DbNull to null.
     /// </summary>
-    public static dynamic ToDynamic(this IDataRecord dataRecord)
+    public static DynamicDictionary ToDynamic(this IDataRecord dataRecord)
     {
-        dynamic obj = new DynamicDictionary();
+        var obj = new DynamicDictionary();
 
         for (var i = 0; i < dataRecord.FieldCount; i++)
         {

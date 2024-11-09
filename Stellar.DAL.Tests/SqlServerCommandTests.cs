@@ -13,7 +13,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
 
     #region GetDebugCommandObject
     [Fact]
-    public void GetDebugCommandText()
+    public void GetsDebugCommandText()
     {
         var customers = Seed.Customers.ToList();
 
@@ -31,7 +31,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     /// Execute round-trip DML.
     /// </summary>
     [Fact]
-    public void ExecuteToList()
+    public void ExecutesToList()
     {
         var customers = Seed.Customers.ToList();
 
@@ -55,7 +55,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     public void GenericExecuteScalarReturnsTheFirstValue()
     {
         var id = database.GetCommand()
-            .SetCommandText("SELECT TOP(1) Id, FirstName FROM Customer;")
+            .SetCommandText("SELECT TOP(1) NEWID(), 'Hello, world.';")
             .ExecuteScalar<Guid>();
 
         Assert.NotEqual(Guid.Empty, id);
@@ -138,7 +138,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     /// Test for the OUTPUT Inserted.* clause.
     /// </summary>
     [Fact]
-    public void InsertAndExecuteToObject()
+    public void InsertsAndExecutesToObject()
     {
         var customer = TestHelpers.Map<Customer>(Seed.CustomerWithTraits);
 
@@ -155,7 +155,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     /// Execute round-trip DML.
     /// </summary>
     [Fact]
-    public void InsertAndExecuteToList()
+    public void InsertsAndExecutesToList()
     {
         using var scope = new TransactionScope();
 

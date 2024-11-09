@@ -33,7 +33,7 @@ public class DynamicDictionaryTests
     }
 
     [Fact]
-    public void DwoncastingWorks()
+    public void Downcasts()
     {
         dynamic obj = new DynamicDictionary();
 
@@ -41,21 +41,12 @@ public class DynamicDictionaryTests
 
         var dictionary = (IDictionary<string, object>)obj;
 
-        Assert.True(dictionary.ContainsKey("FirstName"));
-        Assert.Equal("Clark", dictionary["FirstName"].ToString());
-        Assert.Equal(obj.FirstName, $"{dictionary["FirstName"]}");
-    }
+        dictionary["LastName"] = "Kent";
+        dictionary.Add("Age", int.MaxValue);
 
-    [Fact]
-    public void ReferenceUpdatesWork()
-    {
-        dynamic obj = new DynamicDictionary();
-
-        var dictionary = (IDictionary<string, object>)obj;
-
-        dictionary.Add("FirstName", "Clark");
-
-        Assert.Equal("Clark", obj.FirstName);
+        Assert.Equal(dictionary["FirstName"], obj.FirstName);
+        Assert.Equal(dictionary["LastName"], obj.LastName);
+        Assert.Equal(dictionary["Age"], obj.Age);
     }
 
     [Fact]

@@ -27,7 +27,9 @@ public class LocalSqlDatabaseFixture : IDisposable
 
     void IDisposable.Dispose()
     {
-        var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database); ExecuteNonQuery(sql);
+        var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database);
+        
+        ExecuteNonQuery(sql);
 
         GC.SuppressFinalize(this);
     }

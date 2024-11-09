@@ -22,7 +22,7 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
             .AddParameter("@customerId", customerId, System.Data.DbType.Int32)
             .ExecuteToDynamicList();
 
-        var customer = list[0];
+        dynamic customer = list[0];
 
         customer.FullName = $"{customer.Title} {customer.FirstName} {customer.MiddleName} {customer.LastName} {customer.Suffix}".Trim();
 
