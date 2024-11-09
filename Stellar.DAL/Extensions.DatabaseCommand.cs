@@ -310,7 +310,7 @@ public static partial class Extensions
         }
     }
 
-    public static void ExecuteReaderFirst(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
+    public static void ExecuteReaderOnce(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
     {
         try
         {
@@ -343,28 +343,25 @@ public static partial class Extensions
         }
     }
 
-    public static List<T> ExecuteToList<T>(this DatabaseCommand command, Func<IDataRecord, T> callback, bool keepAlive = false)
+    public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T> callback = null)
     {
         var list = new List<T>();
 
         command.ExecuteReader(record =>
         {
-            list.Add(callback.Invoke(record));
+            list.Add(callback is null
+                ? ToObject<T>(record)
+                : callback.Invoke(record));
         }, keepAlive);
 
         return list;
-    }
-
-    public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false)
-    {
-        return command.ExecuteToList(ToObject<T>, keepAlive);
     }
 
     public static T ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false) where T : new()
     {
         T obj = default;
 
-        command.ExecuteReaderFirst(record =>
+        command.ExecuteReaderOnce(record =>
         {
             obj = ToObject<T>(record);
         }, keepAlive);
@@ -374,14 +371,21 @@ public static partial class Extensions
 
     public static List<DynamicDictionary> ExecuteToDynamicList(this DatabaseCommand command, bool keepAlive = false)
     {
-        return command.ExecuteToList(ToDynamic, keepAlive);
+        var list = new List<DynamicDictionary>();
+
+        command.ExecuteReader(record =>
+        {
+            list.Add(record.ToDynamic());
+        }, keepAlive);
+
+        return list;
     }
 
     public static dynamic ExecuteToDynamic(this DatabaseCommand command, bool keepAlive = false)
     {
         dynamic obj = default;
 
-        command.ExecuteReaderFirst(record =>
+        command.ExecuteReaderOnce(record =>
         {
             obj = ToDynamic(record);
         }, keepAlive);

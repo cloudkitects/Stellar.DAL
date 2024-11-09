@@ -101,7 +101,7 @@ public static class Extensions
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
         var mapped = false;
 
-        var typeMetadata = TypeCache.Get(type);
+        var typeMetadata = TypeCache.GetOrAdd(type);
 
         for (var i = 0; i < fieldCount; i++)
         {
@@ -234,7 +234,7 @@ public static class Extensions
         var mapped = false;
 
         // { case-insensitive property/field name, property/field info }
-        var orderedDictionary = TypeCache.Get(type);
+        var orderedDictionary = TypeCache.GetOrAdd(type);
 
         for (var i = 0; i < fieldCount; i++)
         {
