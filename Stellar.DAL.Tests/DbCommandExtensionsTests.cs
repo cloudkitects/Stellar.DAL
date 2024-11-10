@@ -629,7 +629,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     [InlineData("Customer")]
     [InlineData("[Customer]")]
     [InlineData(null)]
-    public void GenerateInsertsForSqlServer(string table)
+    public void GenerateInsertsForSqlServer(string? table)
     {
         var customers = Seed.Customers.ToList();
 

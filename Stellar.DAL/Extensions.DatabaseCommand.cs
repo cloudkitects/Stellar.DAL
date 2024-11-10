@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Net;
 
 namespace Stellar.DAL;
@@ -310,7 +311,7 @@ public static partial class Extensions
         }
     }
 
-    public static void ExecuteReaderOnce(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
+    public static void ExecuteReaderSingle(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
     {
         try
         {
@@ -318,7 +319,7 @@ public static partial class Extensions
 
             command.DbCommand.OpenConnection();
 
-            using var reader = command.DbCommand.ExecuteReader();
+            using var reader = command.DbCommand.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
 
             if (reader.HasRows && reader.Read())
             {
@@ -343,6 +344,32 @@ public static partial class Extensions
         }
     }
 
+    public static List<string> GetReaderNames(this DatabaseCommand command)
+    {
+        var dbCommand = command.DbCommand;
+
+        try
+        {
+            dbCommand.OpenConnection();
+
+            using var reader = dbCommand.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SchemaOnly);
+
+            return Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+
+        }
+        catch (Exception exception)
+        {
+            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+
+            throw;
+        }
+        finally
+        {
+            dbCommand.CloseAndDispose();
+            dbCommand = null;
+        }
+    }
+
     public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T> callback = null)
     {
         var list = new List<T>();
@@ -361,7 +388,7 @@ public static partial class Extensions
     {
         T obj = default;
 
-        command.ExecuteReaderOnce(record =>
+        command.ExecuteReaderSingle(record =>
         {
             obj = ToObject<T>(record);
         }, keepAlive);
@@ -385,7 +412,7 @@ public static partial class Extensions
     {
         dynamic obj = default;
 
-        command.ExecuteReaderOnce(record =>
+        command.ExecuteReaderSingle(record =>
         {
             obj = ToDynamic(record);
         }, keepAlive);
