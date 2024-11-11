@@ -203,17 +203,17 @@ public static partial class Extensions
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(command);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
             command.DbCommand.OpenConnection();
 
             numberOfRowsAffected = command.DbCommand.ExecuteNonQuery();
 
-            EventHandlers.InvokePostExecuteEventHandlers(command);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
@@ -235,7 +235,7 @@ public static partial class Extensions
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(command);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
             command.DbCommand.OpenConnection();
 
@@ -246,11 +246,11 @@ public static partial class Extensions
                 returnValue = null;
             }
 
-            EventHandlers.InvokePostExecuteEventHandlers(command);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
@@ -273,31 +273,45 @@ public static partial class Extensions
         return returnValue.ConvertTo<T>();
     }
 
-    public static void ExecuteReader(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
+    public static void ExecuteReader(this DatabaseCommand command, Func<IDataRecord, bool> callback, bool keepAlive = false)
     {
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(command);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
             command.DbCommand.OpenConnection();
 
             using var reader = command.DbCommand.ExecuteReader();
 
+            var success = true;
+
             while (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    callback.Invoke(reader);
+                    if (!callback.Invoke(reader))
+                    {
+                        success = false;
+                        break;
+                    }
                 }
 
+                if (!success)
+                {
+                    break;
+                }
+                    
                 reader.NextResult();
             }
 
-            EventHandlers.InvokePostExecuteEventHandlers(command);
+            if (success)
+            {
+                EventHandlers.InvokePostExecuteHandlers(command);
+            }
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
@@ -315,7 +329,7 @@ public static partial class Extensions
     {
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(command);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
             command.DbCommand.OpenConnection();
 
@@ -326,11 +340,11 @@ public static partial class Extensions
                 callback.Invoke(reader);
             }
 
-            EventHandlers.InvokePostExecuteEventHandlers(command);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
@@ -359,7 +373,7 @@ public static partial class Extensions
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
@@ -376,9 +390,20 @@ public static partial class Extensions
 
         command.ExecuteReader(record =>
         {
-            list.Add(callback is null
-                ? ToObject<T>(record)
-                : callback.Invoke(record));
+            try
+            {
+                T obj = callback is null
+                    ? record.ToObject<T>()
+                    : callback.Invoke(record);
+
+                list.Add(obj);
+            
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }, keepAlive);
 
         return list;
@@ -402,7 +427,17 @@ public static partial class Extensions
 
         command.ExecuteReader(record =>
         {
-            list.Add(record.ToDynamic());
+            try
+            {
+                list.Add(record.ToDynamic());
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
         }, keepAlive);
 
         return list;
@@ -426,7 +461,7 @@ public static partial class Extensions
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(command);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
             command.DbCommand.OpenConnection();
 
@@ -439,11 +474,11 @@ public static partial class Extensions
 
             dataAdapter.Fill(dataSet);
 
-            EventHandlers.InvokePostExecuteEventHandlers(command);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, command);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }

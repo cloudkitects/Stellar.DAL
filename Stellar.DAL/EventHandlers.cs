@@ -9,41 +9,41 @@ namespace Stellar.DAL;
 public static class EventHandlers
 {
     #region delegates
-    public delegate void PreExecuteEventHandler(DatabaseCommand databaseCommand);
+    public delegate void PreExecute(DatabaseCommand databaseCommand);
 
-    public delegate void PostExecuteEventHandler(DatabaseCommand databaseCommand);
+    public delegate void PostExecute(DatabaseCommand databaseCommand);
 
-    public delegate void UnhandledExceptionEventHandler(Exception exception, DatabaseCommand databaseCommand);
+    public delegate void UnhandledException(Exception exception, DatabaseCommand databaseCommand);
     #endregion
 
     #region delegate collections
-    public static readonly List<PreExecuteEventHandler> PreExecuteEventHandlers = [];
+    public static readonly List<PreExecute> PreExecuteHandlers = [];
 
-    public static readonly List<PostExecuteEventHandler> PostExecuteEventHandlers = [];
+    public static readonly List<PostExecute> PostExecuteHandlers = [];
     
-    public static readonly List<UnhandledExceptionEventHandler> UnhandledExceptionEventHandlers = [];
+    public static readonly List<UnhandledException> UnhandledExceptionHandlers = [];
     #endregion
 
     #region invocation
-    public static void InvokePreExecuteEventHandlers(DatabaseCommand databaseCommand)
+    public static void InvokePreExecuteHandlers(DatabaseCommand databaseCommand)
     {
-        foreach (var handler in PreExecuteEventHandlers)
+        foreach (var handler in PreExecuteHandlers)
         {
             handler.Invoke(databaseCommand);
         }
     }
 
-    public static void InvokePostExecuteEventHandlers(DatabaseCommand databaseCommand)
+    public static void InvokePostExecuteHandlers(DatabaseCommand databaseCommand)
     {
-        foreach (var handler in PostExecuteEventHandlers)
+        foreach (var handler in PostExecuteHandlers)
         {
             handler.Invoke(databaseCommand);
         }
     }
 
-    public static void InvokeUnhandledExceptionEventHandlers(Exception exception, DatabaseCommand databaseCommand)
+    public static void InvokeUnhandledExceptionHandlers(Exception exception, DatabaseCommand databaseCommand)
     {
-        foreach (var handler in UnhandledExceptionEventHandlers)
+        foreach (var handler in UnhandledExceptionHandlers)
         {
             handler.Invoke(exception, databaseCommand);
         }

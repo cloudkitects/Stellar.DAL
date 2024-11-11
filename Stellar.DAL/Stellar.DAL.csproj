@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <PackageId>Stellar.DAL</PackageId>
-    <Version>1.0.2-alpha</Version>
+    <Version>1.0.2-beta</Version>
     <Authors>cloudkitects</Authors>
     <Company>Cloudkitects L.L.C.</Company>
   </PropertyGroup>
