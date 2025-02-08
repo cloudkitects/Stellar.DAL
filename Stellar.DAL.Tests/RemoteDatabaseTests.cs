@@ -5,7 +5,19 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
 {
     readonly RemoteDatabaseFixture database = fixture;
 
-    #region Execute
+    #region
+    [Theory]
+    [InlineData("SELECT TABLE_NAME\r\nFROM INFORMATION_SCHEMA.TABLES\r\nWHERE TABLE_SCHEMA = @schema\r\nORDER BY 1;", "SalesLT", 13)]
+    public void ExecutesQueryToList(string sql, string schema, int count)
+    {
+        var list = database
+            .GetCommand()
+            .SetCommandText(sql)
+            .AddParameter("schema", schema)
+            .ExecuteToList<string>();
+
+        Assert.Equal(count, list.Count);
+    }
     /// <summary>
     /// Executes to dynamic list.
     /// </summary>
@@ -29,5 +41,4 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
         Assert.Equal(fullName, customer.FullName);
     }
     #endregion
-
 }

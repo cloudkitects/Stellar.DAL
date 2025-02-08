@@ -165,7 +165,9 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         const string parameterName = "@SuperHeroNames";
 
-        void Action() => command.AddParameters(parameterName, (List<string>)null);
+        List<string>? list = null;
+
+        void Action() => command.AddParameters(parameterName, list);
 
         Assert.Throws<ArgumentNullException>(Action);
     }
@@ -324,7 +326,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     {
         var command = GetCommand();
 
-        const string parameterName = null;
+        const string parameterName = null!;
 
         object parameterValue = "Superman";
 
@@ -352,7 +354,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     {
         var command = GetCommand();
 
-        const string parameterName = null;
+        const string? parameterName = null;
 
         object parameterValue = "Superman";
 
