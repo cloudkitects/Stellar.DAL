@@ -15,7 +15,7 @@ public static class TypeCache
     public static readonly Dictionary<Type, OrderedDictionary> Cache = [];
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
-    public static OrderedDictionary Get(Type type, Func<MemberInfo, bool> ignore = null)
+    public static OrderedDictionary GetOrAdd(Type type, Func<MemberInfo, bool> ignore = null)
     {
         if (Cache.TryGetValue(type, out OrderedDictionary value))
         {
@@ -67,7 +67,7 @@ public static class TypeCache
 
         var type = instance.GetType();
 
-        var metadata = Get(type);
+        var metadata = GetOrAdd(type);
 
         var dictionary = new Dictionary<string, object>();
 

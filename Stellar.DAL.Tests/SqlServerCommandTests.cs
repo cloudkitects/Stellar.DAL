@@ -11,9 +11,9 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
 {
     readonly LocalSqlDatabaseFixture database = fixture;
 
-    #region GetDebugCommandObject
+    #region debug command
     [Fact]
-    public void GetDebugCommandText()
+    public void GetsDebugCommandText()
     {
         var customers = Seed.Customers.ToList();
 
@@ -26,12 +26,12 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     }
     #endregion
 
-    #region Execute
+    #region executes
     /// <summary>
     /// Execute round-trip DML.
     /// </summary>
     [Fact]
-    public void ExecuteToList()
+    public void ExecutesToList()
     {
         var customers = Seed.Customers.ToList();
 
@@ -48,14 +48,26 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
         // TODO: move to EF tests
         //Assert.True(result.All(r => !r.IdIsNullOrEmpty()));
     }
+
+    [Theory]
+    [InlineData("SELECT * FROM dbo.Customer", "CustomerId,FirstName,LastName,DateOfBirth,Id")]
+    [InlineData("SELECT 'a' A, 1 B, '2024-11-11' C", "A,B,C")]
+    public void GetsReaderNames(string sql, string result)
+    {
+        var command = database.GetCommand().SetCommandText(sql);
+
+        var list = command.GetReaderNames();
+
+        Assert.Equal(result, string.Join(',', list));
+    }
     #endregion
 
-    #region ExecuteScalar
+    #region executes scalar
     [Fact]
     public void GenericExecuteScalarReturnsTheFirstValue()
     {
         var id = database.GetCommand()
-            .SetCommandText("SELECT TOP(1) Id, FirstName FROM Customer;")
+            .SetCommandText("SELECT TOP(1) NEWID(), 'Hello, world.';")
             .ExecuteScalar<Guid>();
 
         Assert.NotEqual(Guid.Empty, id);
@@ -90,7 +102,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.PreExecuteEventHandlers.Add(_ => handlerCalled = true);
+        EventHandlers.PreExecuteHandlers.Add(_ => handlerCalled = true);
 
         database.GetCommand()
             .SetCommandText("SELECT 1")
@@ -104,7 +116,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.PostExecuteEventHandlers.Add(_ => handlerCalled = true);
+        EventHandlers.PostExecuteHandlers.Add(_ => handlerCalled = true);
 
         database.GetCommand()
             .SetCommandText("SELECT 1")
@@ -118,7 +130,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     {
         var handlerCalled = false;
 
-        EventHandlers.UnhandledExceptionEventHandlers.Add((_, _) =>
+        EventHandlers.UnhandledExceptionHandlers.Add((_, _) =>
         {
             handlerCalled = true;
         });
@@ -133,12 +145,12 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     }
     #endregion
 
-    #region Generate Insert
+    #region inserts
     /// <summary>
     /// Test for the OUTPUT Inserted.* clause.
     /// </summary>
     [Fact]
-    public void InsertAndExecuteToObject()
+    public void InsertsAndExecutesToObject()
     {
         var customer = TestHelpers.Map<Customer>(Seed.CustomerWithTraits);
 
@@ -155,7 +167,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     /// Execute round-trip DML.
     /// </summary>
     [Fact]
-    public void InsertAndExecuteToList()
+    public void InsertsAndExecutesToList()
     {
         using var scope = new TransactionScope();
 
@@ -177,85 +189,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     }
     #endregion
 
-    #region Aggregates
-    /// <summary>
-    /// Save a model from the bottom up (components first)
-    /// using fluent syntax and without care for the
-    /// return value beyond passing the test.
-    /// </summary>
-    /// <remarks>
-    /// There is no question that the OUTPUT clause (just like the request/response pattern) violates Command-Query-Separation,
-    /// but persisting the state literally changes (or at least extends) the state in a relational database, e.g., by adding relations.
-    /// CQS compliance would be to not care for the return value (remove the clause and execute a non-query command), e.g., Save(model).
-    /// "Light" CQS returns new objects, e.g., newModel = Save(model), but unless model is read-only, anyone can model = Save(model).
-    ///
-    /// CQS does not apply to REST APIs: POST, PUT, and DELETE verbs imply the intention to change the state, yet HTTP
-    /// demands returning proper responses, thus violating "pure" CQS, even if it only responds "OK".
-    /// </remarks>
-    /*
-    [Theory]
-    [ClassData(typeof(Seed.Persons))]
-    public void SaveModelBottomUp1(Person person)
-    {
-        var addressId = database.SavedId(person.Address);
-
-        var rowsAffected = database.Insert(person.ExtendWith("AddressId", addressId));
-
-        Assert.True(rowsAffected > 0);
-    }
-
-    /// <summary>
-    /// Save a model from the bottom up (components first)
-    /// using fluent syntax and getting it back with
-    /// composite Ids.
-    /// </summary>
-    [Theory]
-    [ClassData(typeof(Seed.Persons0))]
-    public void SaveModelBottomUp2(Person person)
-    {
-        var result = database.GetInsertCommand(person
-                .ExtendWith("AddressId", database.SavedId(person.Address)))
-            .ExecuteToObject<Person>();
-
-        // sad state of affairs if we cannot encapsulate composition.
-        result.Address = person.Address;
-
-        Assert.Equal(person.FirstName, result.FirstName);
-        Assert.Equal(person.LastName, result.LastName);
-        Assert.Equal(person.Email, result.Email);
-        Assert.Equal(person.Phone, result.Phone);
-        Assert.Equal(person.Address?.City, result.Address?.City);
-    }
-
-    /// <summary>
-    /// Save a model from the top down (root first)
-    /// using fluent syntax and getting it back.
-    /// </summary>
-    [Theory]
-    [ClassData(typeof(Seed.Persons1))]
-    public void SaveModelTopDown(Person model)
-    {
-        var person = TestHelpers.Map<Person>(model);
-
-        var personModel = database.GetInsertCommand(person)
-            .ExecuteToObject<Person>();
-
-        personModel.Address = model.Address;
-        
-        var addressId = database.SavedId(model.Address);
-
-        _ = database.GetCommand()
-            .SetCommandText("UPDATE Person SET AddressId = @AddressId OUTPUT Inserted.Id WHERE PersonId = @PersonId")
-            .AddParameter("@AddressId", addressId)
-            .AddParameter(@"PersonId", personModel.PersonId)
-            .ExecuteScalar<Guid>();
-
-        Assert.Equal(model.LastName, personModel.LastName);
-        Assert.Equal(model.Email, personModel.Email);
-        Assert.Equal(model.Phone, personModel.Phone);
-        Assert.Equal(model.Address?.City, personModel.Address?.City);
-    }
-    */
+    #region aggregates
     /// <summary>
     /// Get an object out.
     /// </summary>
@@ -279,11 +213,5 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
         Assert.Equal(line1, person.Address.Line1);
         Assert.Equal(city, person.Address?.City);
     }
-
-    //[Fact]
-    //public void Delete()
-    //{
-
-    //}
     #endregion
 }

@@ -13,405 +13,516 @@ namespace Stellar.DAL;
 public static partial class Extensions
 {
     #region setters
-    public static DatabaseCommand SetCommandText(this DatabaseCommand databaseCommand, string commandText)
+    public static DatabaseCommand SetCommandText(this DatabaseCommand command, string text)
     {
-        databaseCommand.DbCommand.SetCommandText(commandText);
+        command.DbCommand.SetCommandText(text);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AppendCommandText(this DatabaseCommand databaseCommand, string commandText)
+    public static DatabaseCommand AppendCommandText(this DatabaseCommand command, string text)
     {
-        databaseCommand.DbCommand.AppendCommandText(commandText);
+        command.DbCommand.AppendCommandText(text);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand SetCommandType(this DatabaseCommand databaseCommand, CommandType commandType)
+    public static DatabaseCommand SetCommandType(this DatabaseCommand command, CommandType type)
     {
-        databaseCommand.DbCommand.SetCommandType(commandType);
+        command.DbCommand.SetCommandType(type);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand SetCommandTimeout(this DatabaseCommand databaseCommand, int commandTimeoutSeconds)
+    public static DatabaseCommand SetCommandTimeout(this DatabaseCommand command, int timeoutSeconds)
     {
-        databaseCommand.DbCommand.SetCommandTimeout(commandTimeoutSeconds);
+        command.DbCommand.SetCommandTimeout(timeoutSeconds);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand SetTransaction(this DatabaseCommand databaseCommand, DbTransaction dbTransaction)
+    public static DatabaseCommand SetTransaction(this DatabaseCommand command, DbTransaction transaction)
     {
-        databaseCommand.DbCommand.SetTransaction(dbTransaction);
+        command.DbCommand.SetTransaction(transaction);
 
-        return databaseCommand;
+        return command;
     }
     #endregion
 
     #region parameter helpers
-    public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, DbParameter dbParameter)
+    public static DatabaseCommand AddParameter(this DatabaseCommand command, DbParameter parameter)
     {
-        databaseCommand.DbCommand.AddParameter(dbParameter);
+        command.DbCommand.AddParameter(parameter);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue)
+    public static DatabaseCommand AddParameter(this DatabaseCommand command, string name, object value)
     {
-        databaseCommand.DbCommand.AddParameter(parameterName, parameterValue);
+        command.DbCommand.AddParameter(name, value);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType)
+    public static DatabaseCommand AddParameter(this DatabaseCommand command, string name, object value, DbType type)
     {
-        databaseCommand.DbCommand.AddParameter(parameterName, parameterValue, dbType);
+        command.DbCommand.AddParameter(name, value, type);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, IEnumerable<DbParameter> dbParameters)
+    public static DatabaseCommand AddParameters(this DatabaseCommand command, IEnumerable<DbParameter> parameters)
     {
-        databaseCommand.DbCommand.AddParameters(dbParameters);
+        command.DbCommand.AddParameters(parameters);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, params DbParameter[] dbParameters)
+    public static DatabaseCommand AddParameters(this DatabaseCommand command, params DbParameter[] parameters)
     {
-        databaseCommand.DbCommand.AddParameters(dbParameters);
+        command.DbCommand.AddParameters(parameters);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameters(this DatabaseCommand databaseCommand, IDictionary<string, object> parameterNameAndValueDictionary)
+    public static DatabaseCommand AddParameters(this DatabaseCommand command, IDictionary<string, object> parameters)
     {
-        databaseCommand.DbCommand.AddParameters(parameterNameAndValueDictionary);
+        command.DbCommand.AddParameters(parameters);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameters<T>(this DatabaseCommand databaseCommand, string parameterName, List<T> parameterValues)
+    public static DatabaseCommand AddParameters<T>(this DatabaseCommand command, string name, List<T> values)
     {
-        databaseCommand.DbCommand.AddParameters(parameterName, parameterValues);
+        command.DbCommand.AddParameters(name, values);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand AddParameters<T>(this DatabaseCommand databaseCommand, string parameterName, List<T> parameterValues, DbType dbType)
+    public static DatabaseCommand AddParameters<T>(this DatabaseCommand command, string name, List<T> values, DbType type)
     {
-        databaseCommand.DbCommand.AddParameters(parameterName, parameterValues, dbType);
+        command.DbCommand.AddParameters(name, values, type);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue)
+    public static DbParameter CreateParameter(this DatabaseCommand command, string name, object value)
     {
-        var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue);
+        var parameter = command.DbCommand.CreateParameter(name, value);
 
         return parameter;
     }
 
-    public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType)
+    public static DbParameter CreateParameter(this DatabaseCommand command, string name, object value, DbType type)
     {
-        var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue, dbType);
+        var parameter = command.DbCommand.CreateParameter(name, value, type);
 
         return parameter;
     }
 
-    public static DbParameter CreateParameter(this DatabaseCommand databaseCommand, string parameterName, object parameterValue, DbType dbType, ParameterDirection parameterDirection)
+    public static DbParameter CreateParameter(this DatabaseCommand command, string name, object value, DbType type, ParameterDirection direction)
     {
-        var parameter = databaseCommand.DbCommand.CreateParameter(parameterName, parameterValue, dbType, parameterDirection);
+        var parameter = command.DbCommand.CreateParameter(name, value, type, direction);
 
         return parameter;
     }
     #endregion
 
     #region insert script generators
-    
-    #region MySQL
-    public static DatabaseCommand GenerateMySqlInsert(this DatabaseCommand databaseCommand, object item, string table = null)
-    {
-        databaseCommand.DbCommand.GenerateMySqlInsert(item, table);
 
-        return databaseCommand;
+    #region MySQL
+    public static DatabaseCommand GenerateMySqlInsert(this DatabaseCommand command, object item, string table = null)
+    {
+        command.DbCommand.GenerateMySqlInsert(item, table);
+
+        return command;
     }
 
-    public static DatabaseCommand GenerateMySqlInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateMySqlInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateMySqlInserts(list, table);
+        command.DbCommand.GenerateMySqlInserts(list, table);
 
-        return databaseCommand;
+        return command;
     }
     #endregion
 
     #region SqLite
-    public static DatabaseCommand GenerateSQLiteInsert(this DatabaseCommand databaseCommand, object item, string table = null)
+    public static DatabaseCommand GenerateSQLiteInsert(this DatabaseCommand command, object item, string table = null)
     {
-        databaseCommand.DbCommand.GenerateSQLiteInsert(item, table);
+        command.DbCommand.GenerateSQLiteInsert(item, table);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand GenerateSQLiteInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSQLiteInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateSQLiteInserts(list, table);
+        command.DbCommand.GenerateSQLiteInserts(list, table);
 
-        return databaseCommand;
+        return command;
     }
     #endregion
 
     #region SqlServer
-    public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand databaseCommand, object item, string table = null)
+    public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand command, object item, string table = null)
     {
-        databaseCommand.DbCommand.GenerateSqlServerInsert(item, table);
+        command.DbCommand.GenerateSqlServerInsert(item, table);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand databaseCommand, object item, string table = null)
+    public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand command, object item, string table = null)
     {
-        databaseCommand.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
+        command.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
 
-        return databaseCommand;
+        return command;
     }
 
-    public static DatabaseCommand GenerateSqlServerInserts<T>(this DatabaseCommand databaseCommand, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSqlServerInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
     {
-        databaseCommand.DbCommand.GenerateSqlServerInserts(list, table);
+        command.DbCommand.GenerateSqlServerInserts(list, table);
 
-        return databaseCommand;
+        return command;
     }
     #endregion
 
     #endregion
 
     #region select script generators
-    public static DatabaseCommand GenerateSqlServerSelectById(this DatabaseCommand databaseCommand, string table, long id)
+    public static DatabaseCommand GenerateSqlServerSelectById(this DatabaseCommand command, string table, long id)
     {
-        databaseCommand.DbCommand.GenerateSqlServerSelectById(table, id);
+        command.DbCommand.GenerateSqlServerSelectById(table, id);
 
-        return databaseCommand;
+        return command;
     }
     #endregion
 
     #region execute wrappers
-    public static long ExecuteNonQuery(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static long ExecuteNonQuery(this DatabaseCommand command, bool keepAlive = false)
     {
         long numberOfRowsAffected;
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
-            databaseCommand.DbCommand.OpenConnection();
+            command.DbCommand.OpenConnection();
 
-            numberOfRowsAffected = databaseCommand.DbCommand.ExecuteNonQuery();
+            numberOfRowsAffected = command.DbCommand.ExecuteNonQuery();
 
-            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
         finally
         {
-            if (keepConnectionOpen == false)
+            if (!keepAlive)
             {
-                databaseCommand.DbCommand.CloseAndDispose();
-                databaseCommand.DbCommand = null;
+                command.DbCommand.CloseAndDispose();
+                command.DbCommand = null;
             }
         }
 
         return numberOfRowsAffected;
     }
 
-    public static object ExecuteScalar(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static object ExecuteScalar(this DatabaseCommand command, bool keepAlive = false)
     {
         object returnValue;
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
-            databaseCommand.DbCommand.OpenConnection();
+            command.DbCommand.OpenConnection();
 
-            returnValue = databaseCommand.DbCommand.ExecuteScalar();
+            returnValue = command.DbCommand.ExecuteScalar();
 
             if (returnValue == DBNull.Value)
             {
                 returnValue = null;
             }
 
-            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
         finally
         {
-            if (!keepConnectionOpen)
+            if (!keepAlive)
             {
-                databaseCommand.DbCommand.CloseAndDispose();
-                databaseCommand.DbCommand = null;
+                command.DbCommand.CloseAndDispose();
+                command.DbCommand = null;
             }
         }
 
         return returnValue;
     }
 
-    public static T ExecuteScalar<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static T ExecuteScalar<T>(this DatabaseCommand command, bool keepAlive = false)
     {
-        var returnValue = databaseCommand.ExecuteScalar(keepConnectionOpen);
+        var returnValue = command.ExecuteScalar(keepAlive);
 
         return returnValue.ConvertTo<T>();
     }
 
-    public static void ExecuteReader(this DatabaseCommand databaseCommand, Action<IDataRecord> dataRecordCallback, bool keepConnectionOpen = false)
+    public static void ExecuteReader(this DatabaseCommand command, Func<IDataRecord, bool> callback, bool keepAlive = false)
     {
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
-            databaseCommand.DbCommand.OpenConnection();
+            command.DbCommand.OpenConnection();
 
-            using (var dbDataReader = databaseCommand.DbCommand.ExecuteReader())
+            using var reader = command.DbCommand.ExecuteReader();
+
+            var success = true;
+
+            while (reader.HasRows)
             {
-                while (dbDataReader.HasRows)
+                while (reader.Read())
                 {
-                    while (dbDataReader.Read())
+                    if (!callback.Invoke(reader))
                     {
-                        dataRecordCallback.Invoke(dbDataReader);
+                        success = false;
+                        break;
                     }
-
-                    dbDataReader.NextResult();
                 }
+
+                if (!success)
+                {
+                    break;
+                }
+                    
+                reader.NextResult();
             }
 
-            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
+            if (success)
+            {
+                EventHandlers.InvokePostExecuteHandlers(command);
+            }
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
         finally
         {
-            if (!keepConnectionOpen)
+            if (!keepAlive)
             {
-                databaseCommand.DbCommand.CloseAndDispose();
-                databaseCommand.DbCommand = null;
+                command.DbCommand.CloseAndDispose();
+                command.DbCommand = null;
             }
         }
     }
 
-    public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, Func<IDataRecord, T> mapper, bool keepConnectionOpen = false)
+    public static void ExecuteReaderSingle(this DatabaseCommand command, Action<IDataRecord> callback, bool keepAlive = false)
+    {
+        try
+        {
+            EventHandlers.InvokePreExecuteHandlers(command);
+
+            command.DbCommand.OpenConnection();
+
+            using var reader = command.DbCommand.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+
+            if (reader.HasRows && reader.Read())
+            {
+                callback.Invoke(reader);
+            }
+
+            EventHandlers.InvokePostExecuteHandlers(command);
+        }
+        catch (Exception exception)
+        {
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
+
+            throw;
+        }
+        finally
+        {
+            if (!keepAlive)
+            {
+                command.DbCommand.CloseAndDispose();
+                command.DbCommand = null;
+            }
+        }
+    }
+
+    public static List<string> GetReaderNames(this DatabaseCommand command)
+    {
+        var dbCommand = command.DbCommand;
+
+        try
+        {
+            dbCommand.OpenConnection();
+
+            using var reader = dbCommand.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SchemaOnly);
+
+            return Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+
+        }
+        catch (Exception exception)
+        {
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
+
+            throw;
+        }
+        finally
+        {
+            dbCommand.CloseAndDispose();
+            dbCommand = null;
+        }
+    }
+
+    public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T> callback = null)
     {
         var list = new List<T>();
 
-        databaseCommand.ExecuteReader(callback =>
+        command.ExecuteReader(record =>
         {
-            list.Add(mapper.Invoke(callback));
-        }, keepConnectionOpen);
+            try
+            {
+                T obj = callback is null
+                    ? record.ToObject<T>()
+                    : callback.Invoke(record);
+
+                list.Add(obj);
+            
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }, keepAlive);
 
         return list;
     }
 
-    public static List<T> ExecuteToList<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static T ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false) where T : new()
     {
-        return databaseCommand.ExecuteToList(ToObject<T>, keepConnectionOpen);
+        T obj = default;
+
+        command.ExecuteReaderSingle(record =>
+        {
+            obj = ToObject<T>(record);
+        }, keepAlive);
+
+        return obj;
     }
 
-    public static T ExecuteToObject<T>(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false) where T : new()
+    public static List<DynamicDictionary> ExecuteToDynamicList(this DatabaseCommand command, bool keepAlive = false)
     {
-        return databaseCommand.ExecuteToList<T>(keepConnectionOpen).FirstOrDefault();
+        var list = new List<DynamicDictionary>();
+
+        command.ExecuteReader(record =>
+        {
+            try
+            {
+                list.Add(record.ToDynamic());
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }, keepAlive);
+
+        return list;
     }
 
-    public static List<dynamic> ExecuteToDynamicList(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static dynamic ExecuteToDynamic(this DatabaseCommand command, bool keepAlive = false)
     {
-        return databaseCommand.ExecuteToList(ToDynamic, keepConnectionOpen);
+        dynamic obj = default;
+
+        command.ExecuteReaderSingle(record =>
+        {
+            obj = ToDynamic(record);
+        }, keepAlive);
+
+        return obj;
     }
 
-    public static dynamic ExecuteToDynamic(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
-    {
-        return databaseCommand.ExecuteToDynamicList(keepConnectionOpen).FirstOrDefault();
-    }
-
-    public static DataSet ExecuteToDataSet(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static DataSet ExecuteToDataSet(this DatabaseCommand command, bool keepAlive = false)
     {
         var dataSet = new DataSet();
 
         try
         {
-            EventHandlers.InvokePreExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePreExecuteHandlers(command);
 
-            databaseCommand.DbCommand.OpenConnection();
+            command.DbCommand.OpenConnection();
 
-            var dbProviderFactory = DbProviderFactories.GetFactory(databaseCommand.DbCommand.Connection);
+            var dbProviderFactory = DbProviderFactories.GetFactory(command.DbCommand.Connection);
 
             var dataAdapter = dbProviderFactory.CreateDataAdapter() ??
                 throw new Exception("An unexpected null was returned from a call to DbProviderFactory.CreateDataAdapter().");
-            
-            dataAdapter.SelectCommand = databaseCommand.DbCommand;
+
+            dataAdapter.SelectCommand = command.DbCommand;
 
             dataAdapter.Fill(dataSet);
 
-            EventHandlers.InvokePostExecuteEventHandlers(databaseCommand);
+            EventHandlers.InvokePostExecuteHandlers(command);
         }
         catch (Exception exception)
         {
-            EventHandlers.InvokeUnhandledExceptionEventHandlers(exception, databaseCommand);
+            EventHandlers.InvokeUnhandledExceptionHandlers(exception, command);
 
             throw;
         }
         finally
         {
-            if (keepConnectionOpen == false)
+            if (!keepAlive)
             {
-                databaseCommand.DbCommand.CloseAndDispose();
-                databaseCommand.DbCommand = null;
+                command.DbCommand.CloseAndDispose();
+                command.DbCommand = null;
             }
         }
 
         return dataSet;
     }
 
-    public static DataTable ExecuteToDataTable(this DatabaseCommand databaseCommand, bool keepConnectionOpen = false)
+    public static DataTable ExecuteToDataTable(this DatabaseCommand command, bool keepAlive = false)
     {
-        return databaseCommand.ExecuteToDataSet(keepConnectionOpen).Tables[0];
+        return command.ExecuteToDataSet(keepAlive).Tables[0];
     }
     #endregion
 
     #region transactions
-    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand)
+    public static DbTransaction BeginTransaction(this DatabaseCommand command)
     {
-        var transaction = databaseCommand.DbCommand.BeginTransaction();
+        var transaction = command.DbCommand.BeginTransaction();
 
         return transaction;
     }
 
-    public static DbTransaction BeginTransaction(this DatabaseCommand databaseCommand, IsolationLevel isolationLevel)
+    public static DbTransaction BeginTransaction(this DatabaseCommand command, IsolationLevel isolationLevel)
     {
-        var transaction = databaseCommand.DbCommand.BeginTransaction(isolationLevel);
+        var transaction = command.DbCommand.BeginTransaction(isolationLevel);
 
         return transaction;
     }
     #endregion
 
     #region miscellaneous
-    public static bool TestConnection(this DatabaseCommand databaseCommand)
+    public static bool TestConnection(this DatabaseCommand command)
     {
         try
         {
-            databaseCommand.DbCommand.Connection.Open();
-            databaseCommand.DbCommand.Connection.Close();
+            command.DbCommand.Connection.Open();
+            command.DbCommand.Connection.Close();
 
             return true;
         }
@@ -421,31 +532,31 @@ public static partial class Extensions
         }
     }
 
-    public static DbCommand ToDbCommand(this DatabaseCommand databaseCommand)
+    public static DbCommand ToDbCommand(this DatabaseCommand command)
     {
-        ArgumentNullException.ThrowIfNull(databaseCommand);
+        ArgumentNullException.ThrowIfNull(command);
 
-        return databaseCommand.DbCommand;
+        return command.DbCommand;
     }
 
     /// <summary>
     /// Generate a DTO with command and connection information.
     /// </summary>
-    internal static DebugInfo GetDebugInfo(this DatabaseCommand databaseCommand)
+    internal static DebugInfo GetDebugInfo(this DatabaseCommand command)
     {
-        var command = databaseCommand.DbCommand;
+        var dbCommand = command.DbCommand;
 
         return new DebugInfo
         {
             MachineName = Environment.MachineName,
             HostName = Dns.GetHostEntry("LocalHost").HostName,
-            DataSource = command.Connection.DataSource,
-            Database = command.Connection.Database,
-            ConnectionString = command.Connection.ConnectionString,
-            ConnectionState = command.Connection.State,
-            CommandTimeout = command.CommandTimeout,
-            CommandParameterCount = command.Parameters.Count,
-            AnnotatedCommandText = command.AnnotatedCommandText()
+            DataSource = dbCommand.Connection.DataSource,
+            Database = dbCommand.Connection.Database,
+            ConnectionString = dbCommand.Connection.ConnectionString,
+            ConnectionState = dbCommand.Connection.State,
+            CommandTimeout = dbCommand.CommandTimeout,
+            CommandParameterCount = dbCommand.Parameters.Count,
+            AnnotatedCommandText = dbCommand.AnnotatedCommandText()
         };
     }
     #endregion

@@ -13,8 +13,8 @@ public class Seed
 
     private static void LoadPersonGroups(string path)
     {
-        PersonGroups[0] = new List<Person>();
-        PersonGroups[1] = new List<Person>();
+        PersonGroups[0] = [];
+        PersonGroups[1] = [];
 
         using var reader = new StreamReader(new FileStream(path, FileMode.Open));
 
@@ -50,47 +50,47 @@ public class Seed
     }
 
     #region customer
-    public static CustomerWithFields CustomerWithFields = new()
+    internal static readonly CustomerWithFields CustomerWithFields = new()
     {
         FirstName = "Clark",
         LastName = "Kent",
         DateOfBirth = DateTime.Parse("06/18/1938")
     };
 
-    public static Customer Customer1 = new()
+    internal static readonly Customer Customer1 = new()
     {
         FirstName = "Clark",
         LastName = "Kent",
         DateOfBirth = DateTime.Parse("06/18/1938")
     };
 
-    public static Customer Customer2 = new()
+    internal static readonly Customer Customer2 = new()
     {
         FirstName = "Bruce",
         LastName = "Wayne",
         DateOfBirth = DateTime.Parse("05/27/1939")
     };
 
-    public static Customer Customer3 = new()
+    internal static readonly Customer Customer3 = new()
     {
         FirstName = "Peter",
         LastName = "Parker",
         DateOfBirth = DateTime.Parse("08/18/1962")
     };
 
-    public static CustomerWithTraits CustomerWithTraits = new()
+    internal static readonly CustomerWithTraits CustomerWithTraits = new()
     {
         FirstName = Customer1.FirstName,
         LastName = Customer1.LastName,
         DateOfBirth = Customer1.DateOfBirth,
-        Traits = new List<string>
-        {
+        Traits =
+        [
             "flight",
             "super strength",
             "invulnerability",
             "super speed",
             "laser eyes"
-        }
+        ]
     };
 
     public static IEnumerable<Customer> Customers {
@@ -104,7 +104,7 @@ public class Seed
     #endregion
 
     #region Persons
-    public static Person Superman = new()
+    internal static readonly Person Superman = new()
     {
         FirstName = "Clark",
         LastName = "Kent",
@@ -120,7 +120,7 @@ public class Seed
         Traits = CustomerWithTraits.Traits
     };
 
-    public static Person Batman = new()
+    internal static readonly Person Batman = new()
     {
         FirstName = "Bruce",
         LastName = "Wayne",
@@ -135,7 +135,7 @@ public class Seed
         }
     };
 
-    public static Person Spiderman = new()
+    internal static readonly Person Spiderman = new()
     {
         FirstName = "Peter",
         LastName = "Parker",
@@ -191,5 +191,5 @@ public class Seed
         
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+    #endregion
 }
-#endregion

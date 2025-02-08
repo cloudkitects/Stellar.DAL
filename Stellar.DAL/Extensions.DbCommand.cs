@@ -48,23 +48,23 @@ public static partial class Extensions
         return command;
     }
 
-    public static DbCommand SetCommandType(this DbCommand command, CommandType commandType)
+    public static DbCommand SetCommandType(this DbCommand command, CommandType type)
     {
-        command.CommandType = commandType;
+        command.CommandType = type;
 
         return command;
     }
 
-    public static DbCommand SetCommandTimeout(this DbCommand command, int commandTimeoutSeconds)
+    public static DbCommand SetCommandTimeout(this DbCommand command, int timeoutSeconds)
     {
-        command.CommandTimeout = commandTimeoutSeconds;
+        command.CommandTimeout = timeoutSeconds;
 
         return command;
     }
 
-    public static DbCommand SetTransaction(this DbCommand command, DbTransaction dbTransaction)
+    public static DbCommand SetTransaction(this DbCommand command, DbTransaction transaction)
     {
-        command.Transaction = dbTransaction;
+        command.Transaction = transaction;
 
         return command;
     }
@@ -170,70 +170,66 @@ public static partial class Extensions
 
     /// <summary>Replaces the name parameter in <see cref="DbCommand.CommandText" /> with a comma-delimited
     /// list of ordered parameter names, i.e., expands 'IN(@names)' into 'IN (@names_p0,@names_p1,@names_p2)'.</summary>
-    public static DbCommand AddParameters<T>(this DbCommand command, string name, List<T> parameterValues)
+    public static DbCommand AddParameters<T>(this DbCommand command, string parameterName, List<T> values)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command.CommandText);
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(parameterValues);
+        ArgumentException.ThrowIfNullOrWhiteSpace(parameterName);
+        ArgumentNullException.ThrowIfNull(values);
         
-        if (parameterValues.Count == 0)
+        if (values.Count == 0)
         {
             throw new Exception("Parameter values list is empty.");
         }
 
-        if (command.CommandText.Contains(name) == false)
+        if (!command.CommandText.Contains(parameterName))
         {
-            throw new Exception($"The CommandText does not contain the parameter name '{name}'");
+            throw new Exception($"The command text does not contain a parameter named '{parameterName}'");
         }
 
-        var parameterNames = new List<string>();
+        var names = new List<string>();
 
-        foreach (var value in parameterValues)
+        foreach (var value in values)
         {
-            var paramName = $"{name}_p{command.Parameters.Count}";
+            var name = $"{parameterName}_p{command.Parameters.Count}";
 
-            parameterNames.Add(paramName);
+            names.Add(name);
 
-            command.AddParameter(paramName, value);
+            command.AddParameter(name, value);
         }
 
-        var commaDelimitedString = string.Join(',', parameterNames);
-
-        command.CommandText = command.CommandText.Replace(name, commaDelimitedString);
+        command.CommandText = command.CommandText.Replace(parameterName, string.Join(',', names));
 
         return command;
     }
 
-    public static DbCommand AddParameters<T>(this DbCommand command, string name, List<T> parameterValues, DbType type)
+    public static DbCommand AddParameters<T>(this DbCommand command, string parameterName, List<T> values, DbType type)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command.CommandText);
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(parameterValues);
+        ArgumentException.ThrowIfNullOrWhiteSpace(parameterName);
+        ArgumentNullException.ThrowIfNull(values);
 
-        if (parameterValues.Count == 0)
+        if (values.Count == 0)
         {
             throw new Exception("Parameter values list is empty.");
         }
 
-        if (command.CommandText.Contains(name) == false)
+        if (!command.CommandText.Contains(parameterName))
         {
-            throw new Exception($"The CommandText does not contain the parameter name '{name}'");
+            throw new Exception($"The command text does not contain a parameter named '{parameterName}'");
         }
 
-        var parameterNames = new List<string>();
+        var names = new List<string>();
 
-        foreach (var value in parameterValues)
+        foreach (var value in values)
         {
-            var paramName = $"{name}_p{command.Parameters.Count}";
+            var name = $"{parameterName}_p{command.Parameters.Count}";
 
-            parameterNames.Add(paramName);
+            names.Add(name);
 
-            command.AddParameter(paramName, value, type);
+            command.AddParameter(name, value, type);
         }
 
-        var commaDelimitedString = string.Join(',', parameterNames);
-
-        command.CommandText = command.CommandText.Replace(name, commaDelimitedString);
+        command.CommandText = command.CommandText.Replace(parameterName, string.Join(',', names));
 
         return command;
     }
@@ -380,13 +376,13 @@ public static partial class Extensions
         return command.GenerateSelectByIdCommand(SqlServerSelectByIdTemplate, table, id, KeywordEscapeMethod.SquareBracket);
     }
 
-    public static DbCommand GenerateSelectByIdCommand(this DbCommand command, string template, string table, long objId, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None)
+    public static DbCommand GenerateSelectByIdCommand(this DbCommand command, string template, string table, long id, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(template);
 
-        if (template.Contains("{0}") == false || template.Contains("{1}") == false)
+        if (!template.Contains("{0}") || !template.Contains("{1}"))
         {
-            throw new Exception("The template does not conform to the requirements of containing two arguments.");
+            throw new Exception("The template must contain two arguments.");
         }
 
         var prefix = string.Empty;
@@ -413,7 +409,7 @@ public static partial class Extensions
         }
 
         command.AppendCommandText(string.Format(template, $"{prefix}{table}{suffix}", table))
-            .AddParameter($"@{table}Id", objId);
+            .AddParameter($"@{table}Id", id);
 
         return command;
     }

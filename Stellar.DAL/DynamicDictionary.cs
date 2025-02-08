@@ -6,28 +6,22 @@ using System.Dynamic;
 namespace Stellar.DAL;
 
 /// <summary>
-/// A dynamic dictionary allowing case-insensitive access and returns null when accessing non-existent properties.
+/// A System.Dynamic object override whose members are implemented using a Stellar.DAL default value dictionary.
 /// </summary>
 /// <example>
-/// // Non-existent properties will return null
-/// dynamic obj = new DynamicDictionary();
-/// var firstName = obj.FirstName;
-/// Assert.Null(firstName);
-///
-/// // Allows case-insensitive property access
-/// dynamic obj = new DynamicDictionary();
-/// obj.SuperHero = "Superman";
-/// Assert.That(obj.SUPERHERO == "Superman");
-/// Assert.That(obj.superhero == obj.sUpErHeRo);
+/// Whereas: 
+///   dynamic person = new { Age = 42 };
+///   Assert.Throws<RuntimeBinderException>(var name = person.Name); // person does not contain a definition for 'Name'
+//
+///   var person = new DynamicInstance();
+///   Assert.Null(person.FirstName);
+///   person.Alterego = "Superman";
+///   Assert.Equals("Superman", person.ALTEREGO);
 /// </example>
 public class DynamicInstance(IDictionary<string, object> dictionary = null) : DynamicObject
 {
     protected readonly IDictionary<string, object> Dictionary = dictionary ?? new DefaultValueDictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
 
-    #region constructor
-    #endregion
-
-    #region DynamicObject Overrides
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
         result = Dictionary[binder.Name];
@@ -62,31 +56,14 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
 
         return true;
     }
-    #endregion
 }
 
 /// <summary>
-/// A dynamic dictionary allowing case-insensitive access and returns null when accessing non-existent properties.
+/// A dictionary implementation based on Stellar.DAL DynamicInstance.
 /// </summary>
-/// <example>
-/// // Non-existent properties will return null
-/// dynamic obj = new DynamicDictionary();
-/// var firstName = obj.FirstName;
-/// Assert.Null(firstName);
-///
-/// // Allows case-insensitive property access
-/// dynamic obj = new DynamicDictionary();
-/// obj.SuperHero = "Superman";
-/// Assert.That(obj.SUPERHERO == "Superman");
-/// Assert.That(obj.superhero == obj.sUpErHeRo);
-/// </example>
 public class DynamicDictionary(IDictionary<string, object> dictionary = null) : DynamicInstance(dictionary), IDictionary<string, object>
 {
-
-    #region constructor
-    #endregion
-
-    #region IDictionary<string, object> Members
+    #region IDictionary<string, object>
     public void Add(string key, object value)
     {
         Dictionary.Add(key, value);
@@ -123,7 +100,7 @@ public class DynamicDictionary(IDictionary<string, object> dictionary = null) : 
     }
     #endregion
 
-    #region ICollection<KeyValuePair<string, object>> Members
+    #region ICollection<KeyValuePair<string, object>>
     public void Add(KeyValuePair<string, object> item)
     {
         Dictionary.Add(item);
@@ -154,14 +131,14 @@ public class DynamicDictionary(IDictionary<string, object> dictionary = null) : 
     }
     #endregion
 
-    #region IEnumerable<KeyValuePair<string,object>> Members
+    #region IEnumerable<KeyValuePair<string,object>>
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
     {
         return Dictionary.GetEnumerator();
     }
     #endregion
 
-    #region IEnumerable Members
+    #region IEnumerable
     IEnumerator IEnumerable.GetEnumerator()
     {
         return Dictionary.GetEnumerator();
