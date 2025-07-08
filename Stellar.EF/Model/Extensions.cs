@@ -173,7 +173,7 @@ public static class Extensions
     /// <summary>Gets and caches a type's properties and fields.</summary>
     /// <param name="type">Type.</param>
     /// <returns><see cref="OrderedDictionary"/> of case-insensitive member names with PropertyInfo and FieldInfo as values.</returns>
-    public static OrderedDictionary GetEntityMetadata(Type type)
+    public static OrderedDictionary? GetEntityMetadata(Type type)
     {
         if (TypeCache.TryGet(type, out OrderedDictionary? value))
         {

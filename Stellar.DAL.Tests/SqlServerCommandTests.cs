@@ -21,6 +21,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
 
         var debugInfo = command.GetDebugInfo();
 
+        Assert.NotNull(debugInfo);
         Assert.True(debugInfo.CommandParameterCount >= 3);
         Assert.Equal(System.Data.ConnectionState.Closed, debugInfo.ConnectionState);
     }
@@ -152,7 +153,7 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
     [Fact]
     public void InsertsAndExecutesToObject()
     {
-        var customer = TestHelpers.Map<Customer>(Seed.CustomerWithTraits);
+        var customer = Seed.Customer1;
 
         var command = database.GetCommand();
 
@@ -202,10 +203,11 @@ public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
         var person = database.GetSelectByIdCommand("Person", personId)
             .ExecuteToObject<Person>();
 
+        Assert.NotNull(person);
+
         person.Address = database.GetSelectByIdCommand("Address", personId)
             .ExecuteToObject<Address>();
         
-        Assert.NotNull(person);
         Assert.NotNull(person.Address);
 
         Assert.Equal(first, person.FirstName);

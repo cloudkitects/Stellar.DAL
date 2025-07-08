@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 
 namespace Stellar.DAL;
 
@@ -69,7 +68,7 @@ public class DefaultValueDictionary<TKey, TValue> : IDictionary<TKey, TValue> wh
         set => dictionary[key] = value;
     }
 
-        #endregion IDictionary<string,TValue> Members
+    #endregion IDictionary<string,TValue> Members
 
     #region ICollection<KeyValuePair<TKey, TValue>> Members
     public void Add(KeyValuePair<TKey, TValue> item)
@@ -101,7 +100,7 @@ public class DefaultValueDictionary<TKey, TValue> : IDictionary<TKey, TValue> wh
         return dictionary.Remove(item);
     }
 
-        #endregion ICollection<KeyValuePair<TKey,TValue>> Members
+    #endregion ICollection<KeyValuePair<TKey,TValue>> Members
 
     #region IEnumerable<KeyValuePair<TKey, TValue>> Members
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()

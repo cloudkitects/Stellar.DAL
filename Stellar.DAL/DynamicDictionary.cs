@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Dynamic;
 
 namespace Stellar.DAL;
@@ -18,7 +16,7 @@ namespace Stellar.DAL;
 ///   person.Alterego = "Superman";
 ///   Assert.Equals("Superman", person.ALTEREGO);
 /// </example>
-public class DynamicInstance(IDictionary<string, object> dictionary = null) : DynamicObject
+public class DynamicInstance(IDictionary<string, object>? dictionary = null) : DynamicObject
 {
     protected readonly IDictionary<string, object> Dictionary = dictionary ?? new DefaultValueDictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -29,23 +27,16 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
         return true;
     }
 
-    public override bool TrySetMember(SetMemberBinder binder, object value)
+    public override bool TrySetMember(SetMemberBinder binder, object? value)
     {
-        if (Dictionary.ContainsKey(binder.Name))
-        {
-            Dictionary[binder.Name] = value;
-        }
-        else
-        {
-            Dictionary.Add(binder.Name, value);
-        }
+        Dictionary[binder.Name] = value!;
 
         return true;
     }
 
-    public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+    public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
     {
-        if (!Dictionary.TryGetValue(binder.Name, out object value) || value is not Delegate)
+        if (!Dictionary.TryGetValue(binder.Name, out object? value) || value is not Delegate)
         {
             return base.TryInvokeMember(binder, args, out result);
         }
@@ -61,7 +52,7 @@ public class DynamicInstance(IDictionary<string, object> dictionary = null) : Dy
 /// <summary>
 /// A dictionary implementation based on Stellar.DAL DynamicInstance.
 /// </summary>
-public class DynamicDictionary(IDictionary<string, object> dictionary = null) : DynamicInstance(dictionary), IDictionary<string, object>
+public class DynamicDictionary(IDictionary<string, object>? dictionary = null) : DynamicInstance(dictionary), IDictionary<string, object>
 {
     #region IDictionary<string, object>
     public void Add(string key, object value)
@@ -83,7 +74,7 @@ public class DynamicDictionary(IDictionary<string, object> dictionary = null) : 
 
     public bool TryGetValue(string key, out object value)
     {
-        return Dictionary.TryGetValue(key, out value);
+        return Dictionary.TryGetValue(key, out value!);
     }
 
     public ICollection<object> Values => Dictionary.Values;
@@ -94,7 +85,7 @@ public class DynamicDictionary(IDictionary<string, object> dictionary = null) : 
         {
             Dictionary.TryGetValue(key, out var value);
 
-            return value;
+            return value!;
         }
         set => Dictionary[key] = value;
     }

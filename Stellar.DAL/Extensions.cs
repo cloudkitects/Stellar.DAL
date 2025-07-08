@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Stellar.DAL;
 
@@ -129,7 +128,7 @@ public static partial class Extensions
     /// <returns>The object converted to a dynamic dictionary.</returns>
     public static DynamicDictionary ToDynamicDictionary(this object obj)
     {
-        return new(TypeCache.ToDictionary(obj));
+        return [.. TypeCache.ToDictionary(obj)];
     }
     #endregion
 
@@ -142,10 +141,10 @@ public static partial class Extensions
     /// <summary>Gets the default value for the given type.</summary>
     /// <param name="type">Type to get the default value for.</param>
     /// <returns>Default value of the given type.</returns>
-    public static object GetDefaultValue(this Type type)
+    public static object? GetDefaultValue(this Type type)
     {
         return type.IsValueType
-            ? DefaultValueCache.GetOrAdd(type, Activator.CreateInstance)
+            ? DefaultValueCache.GetOrAdd(type, Activator.CreateInstance!)
             : null;
     }
     #endregion

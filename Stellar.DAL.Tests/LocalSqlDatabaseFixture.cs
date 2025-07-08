@@ -6,7 +6,7 @@ public class LocalSqlDatabaseFixture : IDisposable
 {
     private readonly string _connectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=True;";
 
-    private readonly string _database = TestHelpers.TestDbName();
+    private static readonly string _database = TestHelpers.TestDbName();
 
     public LocalSqlDatabaseFixture()
     {
