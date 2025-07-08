@@ -151,7 +151,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         var parameterList = new List<string> { superman, batman, spiderman };
 
-        void Action() => command.AddParameters(parameterName, parameterList);
+        void Action() => command.AddParameters(parameterName!, parameterList);
 
         Assert.Throws<ArgumentNullException>(Action);
     }
@@ -167,7 +167,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         List<string>? list = null;
 
-        void Action() => command.AddParameters(parameterName, list);
+        void Action() => command.AddParameters(parameterName, list!);
 
         Assert.Throws<ArgumentNullException>(Action);
     }
@@ -302,7 +302,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     {
         var command = GetCommand();
 
-        void Action() => command.AddParameter(null);
+        void Action() => command.AddParameter(null!);
 
         Assert.Throws<ArgumentNullException>(Action);
     }
@@ -358,7 +358,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         object parameterValue = "Superman";
 
-        void Action() => command.AddParameter(parameterName, parameterValue, DbType.AnsiString);
+        void Action() => command.AddParameter(parameterName!, parameterValue, DbType.AnsiString);
 
         Assert.Throws<ArgumentNullException>(Action);
     }
@@ -510,7 +510,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
     {
         var command = GetCommand();
 
-        void Action() => command.GenerateInsertCommand(null, Template);
+        void Action() => command.GenerateInsertCommand(null!, Template);
 
         var exception = Assert.Throws<ArgumentNullException>(Action);
 
@@ -526,7 +526,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         var command = GetCommand();
 
-        void Action() => command.GenerateInsertCommand(customer, null, "[Customer]");
+        void Action() => command.GenerateInsertCommand(customer, null!, "[Customer]");
 
         var exception = Assert.Throws<ArgumentNullException>(Action);
 
@@ -587,7 +587,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
         var customer = Seed.CustomerWithFields;
 
         var command = GetCommand()
-            .GenerateInsertCommand(customer, Template, null, keywordEscapeMethod);
+            .GenerateInsertCommand(customer, Template, null!, keywordEscapeMethod);
 
         Assert.Contains($" {prefix}CustomerWithFields{suffix} ", command.CommandText);
     }
@@ -602,7 +602,7 @@ public class DbCommandExtensionsTests(LocalSqlDatabaseFixture fixture)
 
         var command = GetCommand();
 
-        command = command.GenerateInsertCommand(customer, Template, null, keywordEscapeMethod);
+        command = command.GenerateInsertCommand(customer, Template, null!, keywordEscapeMethod);
 
         Assert.Contains($"{prefix}FirstName{suffix}", command.CommandText);
         Assert.Contains($"{prefix}LastName{suffix}", command.CommandText);

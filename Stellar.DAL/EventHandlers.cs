@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Stellar.DAL;
+﻿namespace Stellar.DAL;
 
 /// <summary>
 /// Pre-execute, post-execute and unhandled exception <see cref="DatabaseCommand" /> event handlers.

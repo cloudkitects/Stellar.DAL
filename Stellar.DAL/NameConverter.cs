@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Stellar.DAL;
@@ -8,7 +6,7 @@ namespace Stellar.DAL;
 /// <summary>
 /// A converter between naming conventions.
 /// </summary>
-public static class NameConverter
+public static partial class NameConverter
 {
     /// <summary>
     /// The default text info used to change case to title case (aka proper case)
@@ -65,7 +63,7 @@ public static class NameConverter
             NamingConvention.LowerSnake,
             (source) =>
             {
-                var target = Regex.Replace(source, @"([a-z0-9])([A-Z])", "$1_$2")
+                var target = PascalTransitionRegex().Replace(source, "$1_$2")
                     .ToLowerInvariant();
 
                 return target;
@@ -76,7 +74,7 @@ public static class NameConverter
             NamingConvention.UpperSnake,
             (source) =>
             {
-                var target = TextInfo.ToTitleCase(Regex.Replace(source, @"_+", " ")
+                var target = TextInfo.ToTitleCase(UnderscoresRegex().Replace(source, " ")
                     .ToUpperInvariant()
                     .Replace(" ", string.Empty));
 
@@ -89,8 +87,7 @@ public static class NameConverter
             NamingConvention.Pascal,
             (source) =>
             {
-                var target = Regex.Replace(source.ToLowerInvariant(), @"(?:\b|_)(\w)",
-                    match => match.Value.ToUpperInvariant())
+                var target = SnakeTransitionRegex().Replace(source.ToLowerInvariant(), match => match.Value.ToUpperInvariant())
                     .Replace("_", string.Empty);
 
                 return target;
@@ -109,4 +106,11 @@ public static class NameConverter
 
         return Conversions[key](source);
     }
+
+    [GeneratedRegex(@"([a-z0-9])([A-Z])")]
+    private static partial Regex PascalTransitionRegex();
+    [GeneratedRegex(@"_+")]
+    private static partial Regex UnderscoresRegex();
+    [GeneratedRegex(@"(?:\b|_)(\w)")]
+    private static partial Regex SnakeTransitionRegex();
 }

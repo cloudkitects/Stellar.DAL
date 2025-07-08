@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Stellar.DAL;
+﻿namespace Stellar.DAL;
 
 /// <summary>A Type conversion helper.</summary>
 public static class TypeConverter
@@ -11,7 +9,7 @@ public static class TypeConverter
     /// <returns>Converted value.</returns>
     /// <exception cref="TypeConversionException">An error occurs attempting to convert a value to an enum.</exception>
     /// <exception cref="TypeConversionException">An error occurs attempting to convert a value to a type.</exception>
-    public static object Convert(object value, Type type)
+    public static object Convert(object? value, Type type)
     {
         // handle DBNull
         if (value == DBNull.Value)
@@ -22,7 +20,7 @@ public static class TypeConverter
         // handle value type conversion of null to the value type's default value
         if (value == null && type.IsValueType)
         {
-            return type.GetDefaultValue();
+            return type.GetDefaultValue()!;
         }
 
         // handle nullable type
@@ -53,13 +51,13 @@ public static class TypeConverter
                 {
                     string str => new Guid(str),
                     byte[] bytes => new Guid(bytes),
-                    _ => value
+                    _ => value!
                 };
             }
 
             var result = System.Convert.ChangeType(value, underlyingType);
 
-            return result;
+            return result!;
         }
         catch (Exception exception)
         {

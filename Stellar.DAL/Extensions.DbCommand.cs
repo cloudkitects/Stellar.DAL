@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Stellar.DAL;
@@ -15,9 +12,9 @@ public static partial class Extensions
     #region connection
     public static DbCommand OpenConnection(this DbCommand command)
     {
-        if (command.Connection.State != ConnectionState.Open)
+        if (command.Connection?.State != ConnectionState.Open)
         {
-            command.Connection.Open();
+            command.Connection?.Open();
         }
 
         return command;
@@ -25,9 +22,9 @@ public static partial class Extensions
 
     public static void CloseAndDispose(this DbCommand command)
     {
-        command.Connection.Close();
+        command.Connection?.Close();
 
-        command.Connection.Dispose();
+        command.Connection?.Dispose();
 
         command.Dispose();
     }
@@ -113,23 +110,23 @@ public static partial class Extensions
         return command;
     }
 
-    public static DbCommand AddParameter(this DbCommand command, string name, object value)
+    public static DbCommand AddParameter(this DbCommand command, string name, object? value)
     {
         
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        var parameter = command.CreateParameter(name, value);
+        var parameter = command.CreateParameter(name, value ?? DBNull.Value);
 
         command.Parameters.Add(parameter);
 
         return command;
     }
 
-    public static DbCommand AddParameter(this DbCommand command, string name, object value, DbType type)
+    public static DbCommand AddParameter(this DbCommand command, string name, object? value, DbType type)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        var parameter = command.CreateParameter(name, value, type);
+        var parameter = command.CreateParameter(name, value ?? DBNull.Value, type);
 
         command.Parameters.Add(parameter);
 
@@ -238,7 +235,7 @@ public static partial class Extensions
     #region insert script generators
     private static readonly string AnsiSqlInsert = @$"INSERT INTO {{0}}({{1}}) VALUES({{2}});";
 
-    public static DbCommand GenerateInsertCommand(this DbCommand command, object item, string template, string table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
+    public static DbCommand GenerateInsertCommand(this DbCommand command, object? item, string template, string? table = null, KeywordEscapeMethod keywordEscapeMethod = KeywordEscapeMethod.None/*, string output = null*/)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentException.ThrowIfNullOrWhiteSpace(template);
@@ -298,12 +295,12 @@ public static partial class Extensions
     #region MySql
     public static string MySqlInsert { get; set; } = AnsiSqlInsert + "SELECT LAST_INSERT_ID();";
 
-    public static DbCommand GenerateMySqlInsert(this DbCommand command, object item, string table = null)
+    public static DbCommand GenerateMySqlInsert(this DbCommand command, object item, string? table = null)
     {
         return command.GenerateInsertCommand(item, MySqlInsert, table, KeywordEscapeMethod.Backtick);
     }
 
-    public static DbCommand GenerateMySqlInserts<T>(this DbCommand command, List<T> list, string table = null)
+    public static DbCommand GenerateMySqlInserts<T>(this DbCommand command, List<T> list, string? table = null)
     {
         foreach (var item in list)
         {
@@ -317,12 +314,12 @@ public static partial class Extensions
     #region SQLite
     public static string SQLiteInsert { get; set; } = AnsiSqlInsert + "SELECT last_insert_rowid();";
 
-    public static DbCommand GenerateSQLiteInsert(this DbCommand command, object item, string table = null)
+    public static DbCommand GenerateSQLiteInsert(this DbCommand command, object item, string? table = null)
     {
         return command.GenerateInsertCommand(item, SQLiteInsert, table, KeywordEscapeMethod.SquareBracket);
     }
 
-    public static DbCommand GenerateSQLiteInserts<T>(this DbCommand command, List<T> list, string table = null)
+    public static DbCommand GenerateSQLiteInserts<T>(this DbCommand command, List<T> list, string? table = null)
     {
         foreach (var item in list)
         {
@@ -338,17 +335,17 @@ public static partial class Extensions
 
     private static readonly string SqlServerInsertWithOutput = @$"INSERT INTO {{0}}({{1}}) OUTPUT Inserted.* VALUES({{2}});{Environment.NewLine}";
 
-    public static DbCommand GenerateSqlServerInsert(this DbCommand command, object item, string table = null)
+    public static DbCommand GenerateSqlServerInsert(this DbCommand command, object item, string? table = null)
     {
         return command.GenerateInsertCommand(item, SqlServerInsert, table, KeywordEscapeMethod.SquareBracket);
     }
 
-    public static DbCommand GenerateSqlServerInsertWithOutput(this DbCommand command, object item, string table = null)
+    public static DbCommand GenerateSqlServerInsertWithOutput(this DbCommand command, object item, string? table = null)
     {
         return command.GenerateInsertCommand(item, SqlServerInsertWithOutput, table, KeywordEscapeMethod.SquareBracket);
     }
 
-    public static DbCommand GenerateSqlServerInserts<T>(this DbCommand command, List<T> list, string table = null)
+    public static DbCommand GenerateSqlServerInserts<T>(this DbCommand command, List<T> list, string? table = null)
     {
         foreach (var item in list)
         {
@@ -358,7 +355,7 @@ public static partial class Extensions
         return command;
     }
 
-    public static DbCommand GenerateAggregateInsertForSqlServer(this DbCommand command, object item, string table = null)
+    public static DbCommand GenerateAggregateInsertForSqlServer(this DbCommand command, object item, string? table = null)
     {
         return command.GenerateInsertCommand(item, SqlServerInsertWithOutput, table, KeywordEscapeMethod.SquareBracket);
     }
@@ -420,7 +417,7 @@ public static partial class Extensions
     {
         command.OpenConnection();
 
-        var transaction = command.Connection.BeginTransaction();
+        var transaction = command.Connection?.BeginTransaction() ?? throw new Exception("The command's connection is null.");
 
         command.SetTransaction(transaction);
 
@@ -431,7 +428,7 @@ public static partial class Extensions
     {
         command.OpenConnection();
 
-        var transaction = command.Connection.BeginTransaction(isolationLevel);
+        var transaction = command.Connection?.BeginTransaction(isolationLevel) ?? throw new Exception("The command's connection is null.");
 
         command.SetTransaction(transaction);
 

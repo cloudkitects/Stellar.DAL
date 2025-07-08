@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Stellar.DAL;
+﻿namespace Stellar.DAL;
 
 /// <summary>Thrown when a ConnectionString could not be found.</summary>
 /// <remarks>

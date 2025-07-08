@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
-using System.Linq;
 using System.Net;
 
 namespace Stellar.DAL;
@@ -131,14 +128,14 @@ public static partial class Extensions
     #region insert script generators
 
     #region MySQL
-    public static DatabaseCommand GenerateMySqlInsert(this DatabaseCommand command, object item, string table = null)
+    public static DatabaseCommand GenerateMySqlInsert(this DatabaseCommand command, object item, string? table = null)
     {
         command.DbCommand.GenerateMySqlInsert(item, table);
 
         return command;
     }
 
-    public static DatabaseCommand GenerateMySqlInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
+    public static DatabaseCommand GenerateMySqlInserts<T>(this DatabaseCommand command, List<T> list, string? table = null)
     {
         command.DbCommand.GenerateMySqlInserts(list, table);
 
@@ -147,14 +144,14 @@ public static partial class Extensions
     #endregion
 
     #region SqLite
-    public static DatabaseCommand GenerateSQLiteInsert(this DatabaseCommand command, object item, string table = null)
+    public static DatabaseCommand GenerateSQLiteInsert(this DatabaseCommand command, object item, string? table = null)
     {
         command.DbCommand.GenerateSQLiteInsert(item, table);
 
         return command;
     }
 
-    public static DatabaseCommand GenerateSQLiteInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSQLiteInserts<T>(this DatabaseCommand command, List<T> list, string? table = null)
     {
         command.DbCommand.GenerateSQLiteInserts(list, table);
 
@@ -163,21 +160,21 @@ public static partial class Extensions
     #endregion
 
     #region SqlServer
-    public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand command, object item, string table = null)
+    public static DatabaseCommand GenerateSqlServerInsert(this DatabaseCommand command, object item, string? table = null)
     {
         command.DbCommand.GenerateSqlServerInsert(item, table);
 
         return command;
     }
 
-    public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand command, object item, string table = null)
+    public static DatabaseCommand GenerateSqlServerInsertWithOutput(this DatabaseCommand command, object item, string? table = null)
     {
         command.DbCommand.GenerateSqlServerInsertWithOutput(item, table);
 
         return command;
     }
 
-    public static DatabaseCommand GenerateSqlServerInserts<T>(this DatabaseCommand command, List<T> list, string table = null)
+    public static DatabaseCommand GenerateSqlServerInserts<T>(this DatabaseCommand command, List<T> list, string? table = null)
     {
         command.DbCommand.GenerateSqlServerInserts(list, table);
 
@@ -222,16 +219,16 @@ public static partial class Extensions
             if (!keepAlive)
             {
                 command.DbCommand.CloseAndDispose();
-                command.DbCommand = null;
+                command.DbCommand = null!;
             }
         }
 
         return numberOfRowsAffected;
     }
 
-    public static object ExecuteScalar(this DatabaseCommand command, bool keepAlive = false)
+    public static object? ExecuteScalar(this DatabaseCommand command, bool keepAlive = false)
     {
-        object returnValue;
+        object? returnValue;
 
         try
         {
@@ -259,18 +256,18 @@ public static partial class Extensions
             if (!keepAlive)
             {
                 command.DbCommand.CloseAndDispose();
-                command.DbCommand = null;
+                command.DbCommand = null!;
             }
         }
 
         return returnValue;
     }
 
-    public static T ExecuteScalar<T>(this DatabaseCommand command, bool keepAlive = false)
+    public static T? ExecuteScalar<T>(this DatabaseCommand command, bool keepAlive = false)
     {
         var returnValue = command.ExecuteScalar(keepAlive);
 
-        return returnValue.ConvertTo<T>();
+        return returnValue!.ConvertTo<T>();
     }
 
     public static void ExecuteReader(this DatabaseCommand command, Func<IDataRecord, bool> callback, bool keepAlive = false)
@@ -300,7 +297,7 @@ public static partial class Extensions
                 {
                     break;
                 }
-                    
+
                 reader.NextResult();
             }
 
@@ -320,7 +317,8 @@ public static partial class Extensions
             if (!keepAlive)
             {
                 command.DbCommand.CloseAndDispose();
-                command.DbCommand = null;
+                command.DbCommand = null!;
+
             }
         }
     }
@@ -353,7 +351,7 @@ public static partial class Extensions
             if (!keepAlive)
             {
                 command.DbCommand.CloseAndDispose();
-                command.DbCommand = null;
+                command.DbCommand = null!;
             }
         }
     }
@@ -368,7 +366,7 @@ public static partial class Extensions
 
             using var reader = dbCommand.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SchemaOnly);
 
-            return Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+            return [.. Enumerable.Range(0, reader.FieldCount).Select(reader.GetName)];
 
         }
         catch (Exception exception)
@@ -384,7 +382,7 @@ public static partial class Extensions
         }
     }
 
-    public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T> callback = null)
+    public static List<T> ExecuteToList<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T>? callback = null)
     {
         var list = new List<T>();
 
@@ -393,11 +391,11 @@ public static partial class Extensions
             try
             {
                 T obj = callback is null
-                    ? record.ToObject<T>()
+                    ? record.ToObject<T>()!
                     : callback.Invoke(record);
 
                 list.Add(obj);
-            
+
                 return true;
             }
             catch
@@ -409,9 +407,9 @@ public static partial class Extensions
         return list;
     }
 
-    public static T ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false) where T : new()
+    public static T? ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false) where T : new()
     {
-        T obj = default;
+        T? obj = default;
 
         command.ExecuteReaderSingle(record =>
         {
@@ -443,9 +441,9 @@ public static partial class Extensions
         return list;
     }
 
-    public static dynamic ExecuteToDynamic(this DatabaseCommand command, bool keepAlive = false)
+    public static dynamic? ExecuteToDynamic(this DatabaseCommand command, bool keepAlive = false)
     {
-        dynamic obj = default;
+        dynamic? obj = default;
 
         command.ExecuteReaderSingle(record =>
         {
@@ -465,9 +463,9 @@ public static partial class Extensions
 
             command.DbCommand.OpenConnection();
 
-            var dbProviderFactory = DbProviderFactories.GetFactory(command.DbCommand.Connection);
+            var dbProviderFactory = DbProviderFactories.GetFactory(command.DbCommand?.Connection!);
 
-            var dataAdapter = dbProviderFactory.CreateDataAdapter() ??
+            var dataAdapter = dbProviderFactory?.CreateDataAdapter() ??
                 throw new Exception("An unexpected null was returned from a call to DbProviderFactory.CreateDataAdapter().");
 
             dataAdapter.SelectCommand = command.DbCommand;
@@ -487,28 +485,29 @@ public static partial class Extensions
             if (!keepAlive)
             {
                 command.DbCommand.CloseAndDispose();
-                command.DbCommand = null;
+                command.DbCommand = null!;
+
             }
         }
 
         return dataSet;
     }
 
-    public static DataTable ExecuteToDataTable(this DatabaseCommand command, bool keepAlive = false)
+    public static DataTable? ExecuteToDataTable(this DatabaseCommand command, bool keepAlive = false)
     {
         return command.ExecuteToDataSet(keepAlive).Tables[0];
     }
     #endregion
 
     #region transactions
-    public static DbTransaction BeginTransaction(this DatabaseCommand command)
+    public static DbTransaction? BeginTransaction(this DatabaseCommand command)
     {
         var transaction = command.DbCommand.BeginTransaction();
 
         return transaction;
     }
 
-    public static DbTransaction BeginTransaction(this DatabaseCommand command, IsolationLevel isolationLevel)
+    public static DbTransaction? BeginTransaction(this DatabaseCommand command, IsolationLevel isolationLevel)
     {
         var transaction = command.DbCommand.BeginTransaction(isolationLevel);
 
@@ -521,8 +520,8 @@ public static partial class Extensions
     {
         try
         {
-            command.DbCommand.Connection.Open();
-            command.DbCommand.Connection.Close();
+            command.DbCommand?.Connection?.Open();
+            command.DbCommand?.Connection?.Close();
 
             return true;
         }
@@ -532,7 +531,7 @@ public static partial class Extensions
         }
     }
 
-    public static DbCommand ToDbCommand(this DatabaseCommand command)
+    public static DbCommand? ToDbCommand(this DatabaseCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -542,18 +541,19 @@ public static partial class Extensions
     /// <summary>
     /// Generate a DTO with command and connection information.
     /// </summary>
-    internal static DebugInfo GetDebugInfo(this DatabaseCommand command)
+    internal static DebugInfo? GetDebugInfo(this DatabaseCommand command)
     {
-        var dbCommand = command.DbCommand;
+        var dbCommand = command.DbCommand ?? throw new Exception("The database command is not initialized.");
+        var connection = dbCommand.Connection ?? throw new Exception("The underlying command connection is null.");
 
         return new DebugInfo
         {
             MachineName = Environment.MachineName,
-            HostName = Dns.GetHostEntry("LocalHost").HostName,
-            DataSource = dbCommand.Connection.DataSource,
-            Database = dbCommand.Connection.Database,
-            ConnectionString = dbCommand.Connection.ConnectionString,
-            ConnectionState = dbCommand.Connection.State,
+            HostName = Dns.GetHostEntry("localhost").HostName,
+            DataSource = connection.DataSource,
+            Database = connection.Database,
+            ConnectionString = connection.ConnectionString,
+            ConnectionState = connection.State,
             CommandTimeout = dbCommand.CommandTimeout,
             CommandParameterCount = dbCommand.Parameters.Count,
             AnnotatedCommandText = dbCommand.AnnotatedCommandText()
