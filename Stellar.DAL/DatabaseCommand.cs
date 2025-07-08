@@ -70,7 +70,7 @@ public class DatabaseCommand : IDisposable
                 }
                 finally
                 {
-                    DbCommand = null;
+                    DbCommand = null!;
                 }
             }
         }
