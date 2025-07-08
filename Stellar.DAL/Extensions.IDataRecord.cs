@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Reflection;
 
 namespace Stellar.DAL;
@@ -13,7 +12,7 @@ public static partial class Extensions
     /// Parse a <see cref="IDataRecord" /> using generics, reflection, the type cache,
     /// the type converter and an ignore delegate.
     /// </summary>
-    public static T ToObject<T>(this IDataRecord dataRecord, Func<MemberInfo, bool> ignore = null)
+    public static T? ToObject<T>(this IDataRecord dataRecord, Func<MemberInfo, bool>? ignore = null)
     {
         var fieldCount = dataRecord.FieldCount;
         var type = typeof(T);
@@ -83,7 +82,7 @@ public static partial class Extensions
         }
 
         return mapped || fieldCount != 1
-            ? (T)obj
+            ? (T)obj!
             : (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
     }
 
@@ -99,7 +98,7 @@ public static partial class Extensions
         {
             var value = dataRecord.GetValue(i);
 
-            obj[dataRecord.GetName(i)] = Convert.IsDBNull(value) ? null : value;
+            obj[dataRecord.GetName(i)] = Convert.IsDBNull(value) ? null! : value;
         }
 
         return obj;

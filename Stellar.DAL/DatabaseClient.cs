@@ -1,8 +1,5 @@
-﻿using System;
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Data.SqlClient;
 
@@ -12,7 +9,7 @@ namespace Stellar.DAL;
 /// <summary>
 /// Wrapper class for this library.
 /// </summary>
-public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationParameters, CancellationToken, Task<SqlAuthenticationToken>> accessTokenCallback = null) where T : DbConnection, new()
+public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationParameters, CancellationToken, Task<SqlAuthenticationToken>>? accessTokenCallback = null) where T : DbConnection, new()
 {
     #region Create Connection
     /// <summary>Creates a <see cref="DbConnection" of the specified subtype />.</summary>
@@ -28,7 +25,7 @@ public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationPa
             {
                 ConnectionString = connectionString,
                 AccessTokenCallback = accessTokenCallback
-            } as T;
+            } as T ?? throw new Exception("Unable to create a SQLConnection instance.");
         }
         else
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data.Common;
+﻿using System.Data.Common;
 
 namespace Stellar.DAL;
 
@@ -58,7 +57,7 @@ public class DatabaseCommand : IDisposable
 
         if (disposing)
         {
-            if (DbCommand != null)
+            if (DbCommand is not null)
             {
                 try
                 {
@@ -67,10 +66,6 @@ public class DatabaseCommand : IDisposable
                 catch
                 {
                     // ignore
-                }
-                finally
-                {
-                    DbCommand = null;
                 }
             }
         }

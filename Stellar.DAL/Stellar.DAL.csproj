@@ -1,22 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <PackageId>Stellar.DAL</PackageId>
-    <Version>1.0.2-gamma</Version>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RepositoryUrl>https://github.com/cloudkitects/Stellar.DAL</RepositoryUrl>
+    <VersionPrefix>1.0.3</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Title>Stellar DAL</Title>
     <Authors>cloudkitects</Authors>
-    <Company>Cloudkitects L.L.C.</Company>
+    <Company>Cloudkitects, LLC</Company>
+    <Description>Cloudkitect's Stellar Data Access Layer (DAL) library.</Description>
+    <Copyright>Copyright (c) 2025, Cloudkitects, LLC</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/cloudkitects/Stellar.DAL</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.13.2" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.1" />
-    <PackageReference Include="MySql.Data" Version="9.2.0" />
-    <PackageReference Include="Npgsql" Version="9.0.2" />
-    <PackageReference Include="Snowflake.Data" Version="4.3.0" />
-    <PackageReference Include="System.Data.Odbc" Version="9.0.1" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.14.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
+    <PackageReference Include="MySql.Data" Version="9.3.0" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Snowflake.Data" Version="4.7.0" />
+    <PackageReference Include="System.Data.Odbc" Version="9.0.6" />
   </ItemGroup>
 
 </Project>

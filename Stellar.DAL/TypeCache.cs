@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.Reflection;
 
@@ -15,9 +13,9 @@ public static class TypeCache
     public static readonly Dictionary<Type, OrderedDictionary> Cache = [];
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
-    public static OrderedDictionary GetOrAdd(Type type, Func<MemberInfo, bool> ignore = null)
+    public static OrderedDictionary GetOrAdd(Type type, Func<MemberInfo, bool>? ignore = null)
     {
-        if (Cache.TryGetValue(type, out OrderedDictionary value))
+        if (Cache.TryGetValue(type, out OrderedDictionary? value))
         {
             return value;
         }
@@ -50,7 +48,7 @@ public static class TypeCache
     }
 
     /// <summary>Try getting a cached type.</summary>
-    public static bool TryGet(Type type, out OrderedDictionary result)
+    public static bool TryGet(Type type, out OrderedDictionary? result)
     {
         return Cache.TryGetValue(type, out result);
     }
@@ -80,7 +78,7 @@ public static class TypeCache
                 _ => null
             };
 
-            dictionary.Add(entry.Key.ToString(), value);
+            dictionary.Add($"{entry.Key}", value!);
         }
 
         return dictionary;
