@@ -90,7 +90,7 @@ public static partial class Extensions
     /// Maps <see cref="IDataRecord" /> to an internal dynamic dictionary with all conversions intrinsic
     /// to the .NET data provider and a provision for DbNull.
     /// </summary>
-    public static DynamicDictionary ToDynamic(this IDataRecord dataRecord)
+    public static dynamic ToDynamic(this IDataRecord dataRecord)
     {
         var obj = new DynamicDictionary();
 

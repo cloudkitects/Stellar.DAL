@@ -25,12 +25,12 @@ public class LocalSqlDatabaseFixture : IDisposable
             .ExecuteNonQuery();
     }
 
-    void IDisposable.Dispose()
+    public void Dispose()
     {
         var sql = TestHelpers.ParseSqlFile(@"Data\DropDatabase.sql", _database);
-        
-        ExecuteNonQuery(sql);
 
+        ExecuteNonQuery(sql);
+    
         GC.SuppressFinalize(this);
     }
 

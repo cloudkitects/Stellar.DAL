@@ -5,9 +5,7 @@ Beyond keeping up with .NET and system libraries' upgrades and splitting code in
 
 ## The Database Client
 
-The generic `DatabaseClient<T> where T : DbConnection` takes in a connection string and exposes the APIs for almost every database interaction, yet it **does not** build a connection string or read it from configuration files or the options pattern app settings.
-
-Users are free to use the System's data `DbConnection` object to build a connection string and pass the result to the client, but a simple string (or an interpolated string) works just as well:
+The generic `DatabaseClient<T> where T : DbConnection` takes in a connection string and exposes the APIs for almost every database interaction, yet it **does not** build a connection string or read it from configuration files or the options pattern app settings. A valid key-value pair string usually works:
 
 ```cs
 [Fact] 
@@ -28,7 +26,7 @@ The specialized `AzureDatabaseClient` derives from the generic database client s
 
 ### User managed identity authentication flow
 
-By default, it takes in a connection string where the user is a managed identity resource, e.g:
+The default authentication takes in the client ID of a user managed identity, e.g:
 
 ```cs
     private readonly string connectionString =
@@ -38,7 +36,7 @@ By default, it takes in a connection string where the user is a managed identity
         "Encrypt=True;";
 ```
 > [!CAUTION]
-> Store credentials in system environment variables or other vaults.
+> Store credentials in system environment variables or vaults.
 
 ### App registration authetication flow
 

@@ -419,9 +419,9 @@ public static partial class Extensions
         return obj;
     }
 
-    public static List<DynamicDictionary> ExecuteToDynamicList(this DatabaseCommand command, bool keepAlive = false)
+    public static List<dynamic> ExecuteToDynamicList(this DatabaseCommand command, bool keepAlive = false)
     {
-        var list = new List<DynamicDictionary>();
+        var list = new List<dynamic>();
 
         command.ExecuteReader(record =>
         {
