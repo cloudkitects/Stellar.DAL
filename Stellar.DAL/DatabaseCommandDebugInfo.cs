@@ -5,7 +5,7 @@ namespace Stellar.DAL;
 /// <summary>
 /// An object with host, connection and command information.
 /// </summary>
-internal class DebugInfo
+internal class DatabaseCommandDebugInfo
 {
     public string? MachineName;
     public string? HostName;

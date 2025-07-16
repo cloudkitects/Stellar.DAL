@@ -41,7 +41,7 @@ public static class Extensions
 
     public static DynamicDictionary ExtendWith(this object obj, string key, object value)
     {
-        var dictionary = DAL.Extensions.ToDynamicDictionary(obj);
+        var dictionary = obj.ToDynamicDictionary();
 
         dictionary.Add(key, value);
 
@@ -52,7 +52,7 @@ public static class Extensions
 
     public static DynamicDictionary ExtendWith(this object obj, IDictionary<string, object> properties)
     {
-        var dictionary = DAL.Extensions.ToDynamicDictionary(obj);
+        var dictionary = obj.ToDynamicDictionary();
 
         foreach (var (key, value) in properties)
         {

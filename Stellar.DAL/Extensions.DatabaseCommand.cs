@@ -541,12 +541,12 @@ public static partial class Extensions
     /// <summary>
     /// Generate a DTO with command and connection information.
     /// </summary>
-    internal static DebugInfo? GetDebugInfo(this DatabaseCommand command)
+    internal static DatabaseCommandDebugInfo? GetDebugInfo(this DatabaseCommand command)
     {
         var dbCommand = command.DbCommand ?? throw new Exception("The database command is not initialized.");
         var connection = dbCommand.Connection ?? throw new Exception("The underlying command connection is null.");
 
-        return new DebugInfo
+        return new DatabaseCommandDebugInfo
         {
             MachineName = Environment.MachineName,
             HostName = Dns.GetHostEntry("localhost").HostName,
