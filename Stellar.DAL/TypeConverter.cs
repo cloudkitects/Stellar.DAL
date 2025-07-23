@@ -1,4 +1,6 @@
-﻿namespace Stellar.DAL;
+﻿using Stellar.Core;
+
+namespace Stellar.DAL;
 
 /// <summary>A Type conversion helper.</summary>
 public static class TypeConverter

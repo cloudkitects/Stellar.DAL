@@ -1,4 +1,6 @@
-﻿namespace Stellar.DAL.Tests;
+﻿using Stellar.Core;
+
+namespace Stellar.DAL.Tests;
 
 public class DynamicDictionaryTests
 {

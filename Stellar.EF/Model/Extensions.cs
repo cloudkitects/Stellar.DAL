@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Data;
 using System.Reflection;
-using System.Collections.Specialized;
-
-using Stellar.DAL;
-using TypeConverter = Stellar.DAL.TypeConverter;
-using static Stellar.DAL.Extensions;
 using System.Text;
+
+using Stellar.Core;
+using Stellar.DAL;
 
 namespace Stellar.EF.Model;
 
@@ -95,7 +94,7 @@ public static class Extensions
 
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+            return ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -123,7 +122,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
+                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
 
                         try
                         {
@@ -133,7 +132,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new PropertySetValueException(propertyInfo, convertedValue, exception);
+                            throw new DAL.Extensions.PropertySetValueException(propertyInfo, convertedValue!, exception);
                         }
 
                         break;
@@ -147,7 +146,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
 
                         try
                         {
@@ -157,7 +156,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new FieldSetValueException(fieldInfo, value, exception);
+                            throw new DAL.Extensions.FieldSetValueException(fieldInfo, value, exception);
                         }
 
                         break;
@@ -167,7 +166,7 @@ public static class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
+            : ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
     }
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
@@ -211,14 +210,9 @@ public static class Extensions
         return orderedDictionary;
     }
 
-    /// <summary>Maps an <see cref="IDataRecord" /> to a type of <typeparamref name="T" />.</summary>
-    /// <remarks>This method internally uses caching to increase performance.</remarks>
-    /// <typeparam name="T">The type to map to.</typeparam>
-    /// <param name="dataRecord">The <see cref="IDataRecord" /> to map from.</param>
-    /// <returns>A mapped instance of <typeparamref name="T" />.</returns>
-    /// <exception cref="TypeConversionException">A value cannot be converted.</exception>
-    /// <exception cref="PropertySetValueException">A converted value cannot be assigned to a property.</exception>
-    /// <exception cref="FieldSetValueException">A converted value cannot be assigned to a field.</exception>
+    /// <summary>
+    /// TODO: a data record field does not hold culture info, so we need to keep it somewhere else
+    /// </summary>
     public static T ToEntity<T>(this IDataRecord dataRecord)
     {
         var fieldCount = dataRecord.FieldCount;
@@ -227,7 +221,7 @@ public static class Extensions
         // Handle mapping to primitives and strings when there is only a single field in the record
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+            return ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -257,7 +251,8 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
+                        // TODO: 
+                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
 
                         try
                         {
@@ -267,7 +262,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new PropertySetValueException(propertyInfo, convertedValue, exception);
+                            throw new DAL.Extensions.PropertySetValueException(propertyInfo, convertedValue!, exception);
                         }
 
                         break;
@@ -281,7 +276,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
 
                         try
                         {
@@ -291,7 +286,7 @@ public static class Extensions
                         }
                         catch (Exception exception)
                         {
-                            throw new FieldSetValueException(fieldInfo, value, exception);
+                            throw new DAL.Extensions.FieldSetValueException(fieldInfo, value, exception);
                         }
 
                         break;
@@ -301,7 +296,7 @@ public static class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : (T)TypeConverter.Convert(dataRecord.GetValue(0), type)!;
+            : ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
     }
 
 }

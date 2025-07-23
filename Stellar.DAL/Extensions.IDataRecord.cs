@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using System.Reflection;
 
+using Stellar.Core;
+
 namespace Stellar.DAL;
 
 /// <summary>
@@ -20,7 +22,7 @@ public static partial class Extensions
         // single primitive or string value to speed things a bit
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+            return ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -44,7 +46,7 @@ public static partial class Extensions
                 {
                     var value = dataRecord.GetValue(i);
 
-                    var convertedValue = TypeConverter.Convert(value, propertyInfo.PropertyType);
+                    var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
 
                     try
                     {
@@ -54,7 +56,7 @@ public static partial class Extensions
                     }
                     catch (Exception exception)
                     {
-                        throw new PropertySetValueException(propertyInfo, convertedValue, exception);
+                        throw new PropertySetValueException(propertyInfo, convertedValue!, exception);
                     }
 
                     break;
@@ -63,7 +65,7 @@ public static partial class Extensions
                 {
                     var value = dataRecord.GetValue(i);
 
-                    var convertedValue = TypeConverter.Convert(value, fieldInfo.FieldType);
+                    var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
 
                     try
                     {
@@ -83,7 +85,7 @@ public static partial class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : (T)TypeConverter.Convert(dataRecord.GetValue(0), type);
+            : ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
     }
 
     /// <summary>
