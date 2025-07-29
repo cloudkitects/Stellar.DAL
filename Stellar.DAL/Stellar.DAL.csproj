@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/cloudkitects/Stellar.DAL</RepositoryUrl>
-    <VersionPrefix>1.0.4</VersionPrefix>
+    <VersionPrefix>1.0.5</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Title>Stellar DAL</Title>
     <Authors>cloudkitects</Authors>
@@ -15,6 +15,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/cloudkitects/Stellar.DAL</PackageProjectUrl>
+    <PackageReleaseNotes>Core 1.0.7</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +45,7 @@
     <PackageReference Include="MySql.Data" Version="9.3.0" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="Snowflake.Data" Version="4.7.0" />
-    <PackageReference Include="Stellar.Core" Version="1.0.5" />
+    <PackageReference Include="Stellar.Core" Version="1.0.7" />
     <PackageReference Include="System.Data.Odbc" Version="9.0.6" />
   </ItemGroup>
 
