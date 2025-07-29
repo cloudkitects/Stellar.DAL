@@ -2,6 +2,8 @@
 using System.Data.Common;
 using System.Text.RegularExpressions;
 
+using Stellar.Core;
+
 namespace Stellar.DAL;
 
 /// <summary>

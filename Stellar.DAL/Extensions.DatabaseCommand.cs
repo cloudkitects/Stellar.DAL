@@ -265,9 +265,9 @@ public static partial class Extensions
 
     public static T? ExecuteScalar<T>(this DatabaseCommand command, bool keepAlive = false)
     {
-        var returnValue = command.ExecuteScalar(keepAlive);
+        var value = command.ExecuteScalar(keepAlive);
 
-        return returnValue!.ConvertTo<T>();
+        return Core.ValueConverter.Parse<T>($"{value}");
     }
 
     public static void ExecuteReader(this DatabaseCommand command, Func<IDataRecord, bool> callback, bool keepAlive = false)
@@ -407,13 +407,16 @@ public static partial class Extensions
         return list;
     }
 
-    public static T? ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false) where T : new()
+    public static T? ExecuteToObject<T>(this DatabaseCommand command, bool keepAlive = false, Func<IDataRecord, T>? callback = null) where T : new()
     {
         T? obj = default;
 
         command.ExecuteReaderSingle(record =>
         {
-            obj = ToObject<T>(record);
+            obj = callback is null
+                ? record.ToObject<T>()!
+                : callback.Invoke(record);
+;
         }, keepAlive);
 
         return obj;

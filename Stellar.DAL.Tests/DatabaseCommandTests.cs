@@ -1,4 +1,6 @@
-﻿namespace Stellar.DAL.Tests;
+﻿using Stellar.Core;
+
+namespace Stellar.DAL.Tests;
 
 [Collection("Local Database collection")]
 public class DatabaseCommandTests(LocalSqlDatabaseFixture fixture)
@@ -15,7 +17,7 @@ public class DatabaseCommandTests(LocalSqlDatabaseFixture fixture)
 
         command.ExecuteReader((rec) =>
         {
-            var b = rec["b"].ToInt();
+            var b = ValueConverter.Parse<int>($"{rec["b"]}");
 
             if (b == 2)
             {
@@ -42,7 +44,7 @@ public class DatabaseCommandTests(LocalSqlDatabaseFixture fixture)
         {
             try
             {
-                var b = rec["c"].ToInt();
+                var b = ValueConverter.Parse<int>($"{rec["c"]}");
 
                 i++;
 
