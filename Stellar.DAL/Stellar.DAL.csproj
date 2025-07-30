@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/cloudkitects/Stellar.DAL</RepositoryUrl>
-    <VersionPrefix>1.0.5</VersionPrefix>
+    <VersionPrefix>1.0.7</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Title>Stellar DAL</Title>
     <Authors>cloudkitects</Authors>
