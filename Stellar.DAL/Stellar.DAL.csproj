@@ -45,7 +45,7 @@
     <PackageReference Include="MySql.Data" Version="9.3.0" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="Snowflake.Data" Version="4.7.0" />
-    <PackageReference Include="Stellar.Core" Version="1.0.7" />
+    <PackageReference Include="Ste11ar.Core" Version="1.0.7" />
     <PackageReference Include="System.Data.Odbc" Version="9.0.6" />
   </ItemGroup>
 
