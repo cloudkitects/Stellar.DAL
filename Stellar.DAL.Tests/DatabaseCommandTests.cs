@@ -1,4 +1,4 @@
-﻿using Stellar.Core;
+﻿using Stellar.Common;
 
 namespace Stellar.DAL.Tests;
 

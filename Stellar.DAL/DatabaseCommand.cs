@@ -8,10 +8,7 @@ namespace Stellar.DAL;
 /// </summary>
 public class DatabaseCommand : IDisposable
 {
-    #region fields and properties
-    /// <summary>Whether Dispose has been called.</summary>
-    private bool _disposed;
-
+    #region properties
     /// <summary>The underlying <see cref="DbCommand" />.</summary>
     public DbCommand DbCommand;
     #endregion
@@ -36,7 +33,7 @@ public class DatabaseCommand : IDisposable
     }
     #endregion
 
-    #region IDisposable Members
+    #region IDisposable
     /// <summary>Disposes of the underlying <see cref="DbCommand" /> and it's <see cref="DbConnection" />.</summary>
     public void Dispose()
     {
@@ -50,11 +47,6 @@ public class DatabaseCommand : IDisposable
     /// <param name="disposing">Indicates if being called from the Dispose method.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed)
-        {
-            return;
-        }
-
         if (disposing)
         {
             if (DbCommand is not null)
@@ -63,18 +55,12 @@ public class DatabaseCommand : IDisposable
                 {
                     DbCommand.Dispose();
                 }
-                catch
-                {
-                    // ignore
-                }
                 finally
                 {
                     DbCommand = null!;
                 }
             }
         }
-
-        _disposed = true;
     }
-    #endregion IDisposable Members
+    #endregion
 }

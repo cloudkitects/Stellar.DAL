@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Text.RegularExpressions;
 
-using Stellar.Core;
+using Stellar.Common;
 
 namespace Stellar.DAL;
 

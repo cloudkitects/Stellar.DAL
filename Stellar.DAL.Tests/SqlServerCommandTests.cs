@@ -1,4 +1,5 @@
-﻿using System.Transactions;
+﻿using System.Data.Common;
+using System.Transactions;
 
 using Microsoft.Data.SqlClient;
 
@@ -10,6 +11,21 @@ namespace Stellar.DAL.Tests;
 public class SqlServerCommandTests(LocalSqlDatabaseFixture fixture)
 {
     readonly LocalSqlDatabaseFixture database = fixture;
+
+    #region construction
+    [Fact]
+    public void ConstructsOrThrows()
+    {
+        var command1 = database.GetCommand();
+
+        Assert.NotNull(new DatabaseCommand(command1.DbCommand));
+
+        DbCommand command2 = null!;
+
+        Assert.Throws<ArgumentNullException>(() => new DatabaseCommand(command2));
+    }
+    #endregion
+
 
     #region debug command
     [Fact]

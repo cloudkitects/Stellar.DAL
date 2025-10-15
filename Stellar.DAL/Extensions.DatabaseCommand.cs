@@ -267,7 +267,7 @@ public static partial class Extensions
     {
         var value = command.ExecuteScalar(keepAlive);
 
-        return Core.ValueConverter.Parse<T>($"{value}");
+        return Common.ValueConverter.Parse<T>($"{value}");
     }
 
     public static void ExecuteReader(this DatabaseCommand command, Func<IDataRecord, bool> callback, bool keepAlive = false)

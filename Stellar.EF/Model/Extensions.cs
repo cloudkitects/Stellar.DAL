@@ -4,7 +4,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 
-using Stellar.Core;
+using Stellar.Common;
 using Stellar.DAL;
 
 namespace Stellar.EF.Model;
@@ -122,7 +122,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
+                        var convertedValue = ValueConverter.Parse($"{value}", propertyInfo.PropertyType);
 
                         try
                         {
@@ -146,7 +146,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse($"{value}", fieldInfo.FieldType);
 
                         try
                         {
@@ -252,7 +252,7 @@ public static class Extensions
                         var value = dataRecord.GetValue(i);
 
                         // TODO: 
-                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
+                        var convertedValue = ValueConverter.Parse($"{value}", propertyInfo.PropertyType);
 
                         try
                         {
@@ -276,7 +276,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse($"{value}", fieldInfo.FieldType);
 
                         try
                         {

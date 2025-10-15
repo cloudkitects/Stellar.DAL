@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/cloudkitects/Stellar.DAL</RepositoryUrl>
-    <VersionPrefix>1.0.7</VersionPrefix>
+    <VersionPrefix>1.0.9</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Title>Stellar DAL</Title>
     <Authors>cloudkitects</Authors>
@@ -15,7 +15,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/cloudkitects/Stellar.DAL</PackageProjectUrl>
-    <PackageReleaseNotes>Core 1.0.7</PackageReleaseNotes>
+    <PackageReleaseNotes>Common 1.1.2.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,14 +39,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.14.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
-    <PackageReference Include="MySql.Data" Version="9.3.0" />
-    <PackageReference Include="Npgsql" Version="9.0.3" />
-    <PackageReference Include="Snowflake.Data" Version="4.7.0" />
-    <PackageReference Include="Ste11ar.Core" Version="1.0.7" />
-    <PackageReference Include="System.Data.Odbc" Version="9.0.6" />
+    <PackageReference Include="Azure.Identity" Version="1.17.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
+    <PackageReference Include="MySql.Data" Version="9.4.0" />
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+    <PackageReference Include="Snowflake.Data" Version="4.8.0" />
+    <PackageReference Include="Stellar.Common" Version="1.1.2" />
+    <PackageReference Include="System.Data.Odbc" Version="9.0.10" />
   </ItemGroup>
 
 </Project>

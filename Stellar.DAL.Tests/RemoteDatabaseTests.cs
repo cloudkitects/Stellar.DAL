@@ -1,9 +1,17 @@
-﻿namespace Stellar.DAL.Tests;
+﻿using Microsoft.Data.SqlClient;
+
+namespace Stellar.DAL.Tests;
 
 [Collection("Remote Database collection")]
 public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
 {
     readonly RemoteDatabaseFixture database = fixture;
+
+    [Fact]
+    public void GetsCommand()
+    {
+        Assert.NotNull(database.GetCommand());
+    }
 
     #region
     [Theory]
