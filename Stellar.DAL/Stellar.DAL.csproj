@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/cloudkitects/Stellar.DAL</RepositoryUrl>
-    <VersionPrefix>1.0.9</VersionPrefix>
+    <VersionPrefix>1.1.4</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Title>Stellar DAL</Title>
     <Authors>cloudkitects</Authors>
@@ -15,7 +15,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/cloudkitects/Stellar.DAL</PackageProjectUrl>
-    <PackageReleaseNotes>Common 1.1.2.</PackageReleaseNotes>
+    <PackageReleaseNotes>Completed name conversion. Common 1.1.4.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,8 +44,8 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
     <PackageReference Include="MySql.Data" Version="9.4.0" />
     <PackageReference Include="Npgsql" Version="9.0.4" />
-    <PackageReference Include="Snowflake.Data" Version="4.8.0" />
-    <PackageReference Include="Stellar.Common" Version="1.1.2" />
+    <PackageReference Include="Snowflake.Data" Version="5.0.0" />
+    <PackageReference Include="Stellar.Common" Version="1.1.4" />
     <PackageReference Include="System.Data.Odbc" Version="9.0.10" />
   </ItemGroup>
 

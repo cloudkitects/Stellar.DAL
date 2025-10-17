@@ -2,7 +2,7 @@
 
 public class RemoteDatabaseFixture : IDisposable
 {
-    private readonly string _connectionString = 
+    public readonly string ConnectionString = 
         "Server=tcp:stellardev.database.windows.net;" +
         "Database=AdventureWorks;" +
         "User Id=5d17220e-009d-4608-ac3d-238706831a5f;" +
@@ -20,7 +20,7 @@ public class RemoteDatabaseFixture : IDisposable
     /// <returns><see cref="DbCommand"/> instance.</returns>
     public DatabaseCommand GetCommand()
     {
-        return new AzureDatabaseClient(_connectionString)
+        return new AzureDatabaseClient(ConnectionString)
             .GetCommand();
     }
 }

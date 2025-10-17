@@ -25,7 +25,7 @@ public class DatabaseClient<T>(string connectionString, Func<SqlAuthenticationPa
             {
                 ConnectionString = connectionString,
                 AccessTokenCallback = accessTokenCallback
-            } as T ?? throw new Exception("Unable to create a SQLConnection instance.");
+            } as T ?? throw new ArgumentException("Unable to create a SQLConnection instance.");
         }
         else
         {

@@ -17,9 +17,9 @@ public class DatabaseCommandTests(LocalSqlDatabaseFixture fixture)
 
         command.ExecuteReader((rec) =>
         {
-            var b = ValueConverter.Parse<int>($"{rec["b"]}");
+            var b = ValueConverter.Parse<int>(rec["b"]);
 
-            if (b == 2)
+            if ((int)b! == 2)
             {
                 return false;
             }
@@ -44,7 +44,7 @@ public class DatabaseCommandTests(LocalSqlDatabaseFixture fixture)
         {
             try
             {
-                var b = ValueConverter.Parse<int>($"{rec["c"]}");
+                var b = ValueConverter.Parse<int>(rec["c"]);
 
                 i++;
 

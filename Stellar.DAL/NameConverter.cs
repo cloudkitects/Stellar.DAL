@@ -6,15 +6,11 @@ namespace Stellar.DAL;
 /// <summary>
 /// A converter between naming conventions.
 /// </summary>
+/// <remarks>
+/// TODO: inject an acronym list to preserve?
+/// </remarks>
 public static partial class NameConverter
 {
-    /// <summary>
-    /// The default text info used to change case to title case (aka proper case)
-    /// TODO: inject a culture info or use as default (including the invariant calls)
-    /// TODO: inject an acronym list to preserve?
-    /// </summary>
-    private static TextInfo TextInfo => new CultureInfo("en-US", false).TextInfo;
-
     private const string KeyTemplate = "{0}To{1}";
 
 
@@ -34,8 +30,12 @@ public static partial class NameConverter
     {
         if (sourceConvention == targetConvention)
         {
-            throw new ArgumentException(
-                "Tne source naming convention must be different than the target naming convention.");
+            throw new ArgumentException("The source and target naming conventions to convert cannot be the same.");
+        }
+
+        if (conversion is null)
+        {
+            throw new ArgumentNullException(nameof(conversion), "The conversion parameter cannot be null.");
         }
 
         var key = string.Format(KeyTemplate, sourceConvention, targetConvention);
@@ -52,51 +52,74 @@ public static partial class NameConverter
 
     static NameConverter()
     {
-        #region Pascal to...
+        #region Pascal
         AddConversion(
             NamingConvention.Pascal, 
             NamingConvention.Camel,
-            (source) => char.ToLowerInvariant(source[0]) + source[1..]);
+            (source) => CamelPascalRegex().Replace(source, match => match.Groups[1].Value.ToLowerInvariant() + match.Groups[2].Value));
 
         AddConversion(
             NamingConvention.Pascal,
             NamingConvention.LowerSnake,
-            (source) =>
-            {
-                var target = PascalTransitionRegex().Replace(source, "$1_$2")
-                    .ToLowerInvariant();
-
-                return target;
-            });
+            (source) => PascalTransitionRegex().Replace(source, match => match.Groups[1].Value + '_' + match.Groups[2].Value).ToLowerInvariant());
 
         AddConversion(
             NamingConvention.Pascal,
             NamingConvention.UpperSnake,
-            (source) =>
-            {
-                var target = TextInfo.ToTitleCase(UnderscoresRegex().Replace(source, " ")
-                    .ToUpperInvariant()
-                    .Replace(" ", string.Empty));
-
-                return target;
-            });
+            (source) => PascalTransitionRegex().Replace(source, match => match.Groups[1].Value + '_' + match.Groups[2].Value).ToUpperInvariant());
         #endregion
 
+        #region Camel
+        AddConversion(
+            NamingConvention.Camel, 
+            NamingConvention.Pascal,
+            (source) => CamelPascalRegex().Replace(source, match => match.Groups[1].Value.ToUpperInvariant() + match.Groups[2].Value));
+
+        AddConversion(
+            NamingConvention.Camel,
+            NamingConvention.LowerSnake,
+            (source) => PascalTransitionRegex().Replace(source, match => match.Groups[1].Value + '_' + match.Groups[2].Value).ToLowerInvariant());
+
+        AddConversion(
+            NamingConvention.Camel,
+            NamingConvention.UpperSnake,
+            (source) => PascalTransitionRegex().Replace(source, match => match.Groups[1].Value + '_' + match.Groups[2].Value).ToUpperInvariant());
+        #endregion
+
+
+        #region lower snake
         AddConversion(
             NamingConvention.LowerSnake,
             NamingConvention.Pascal,
-            (source) =>
-            {
-                var target = SnakeTransitionRegex().Replace(source.ToLowerInvariant(), match => match.Value.ToUpperInvariant())
-                    .Replace("_", string.Empty);
+            (source) => SnakePascalRegex().Replace(source, match => match.Value.ToUpperInvariant()).Replace("_", string.Empty));
+    
+        AddConversion(
+        NamingConvention.LowerSnake,
+        NamingConvention.Camel,
+        (source) => SnakeCamelRegex().Replace(source.ToLowerInvariant(), match => match.Groups[1].Value.ToUpperInvariant()));
 
-                return target;
-            });
+        AddConversion(
+        NamingConvention.LowerSnake,
+        NamingConvention.UpperSnake,
+        (source) => source.ToUpperInvariant());
+        #endregion
 
+        #region upper snake
         AddConversion(
             NamingConvention.UpperSnake,
             NamingConvention.Pascal,
-            Conversions[string.Format(KeyTemplate, NamingConvention.LowerSnake, NamingConvention.Pascal)]);
+            (source) => SnakePascalRegex().Replace(source.ToLowerInvariant(), match => match.Value.ToUpperInvariant()).Replace("_", string.Empty));
+
+        AddConversion(
+        NamingConvention.UpperSnake,
+        NamingConvention.Camel,
+        (source) => SnakeCamelRegex().Replace(source.ToLowerInvariant(), match => match.Groups[1].Value.ToUpperInvariant()));
+
+        AddConversion(
+        NamingConvention.UpperSnake,
+        NamingConvention.LowerSnake,
+        (source) => source.ToLowerInvariant());
+        #endregion
     }
 
     public static string Convert(NamingConvention sourceConvention, NamingConvention targetConvention,
@@ -109,8 +132,13 @@ public static partial class NameConverter
 
     [GeneratedRegex(@"([a-z0-9])([A-Z])")]
     private static partial Regex PascalTransitionRegex();
-    [GeneratedRegex(@"_+")]
-    private static partial Regex UnderscoresRegex();
-    [GeneratedRegex(@"(?:\b|_)(\w)")]
-    private static partial Regex SnakeTransitionRegex();
+    
+    [GeneratedRegex(@"(?:_)(\w)")]
+    private static partial Regex SnakeCamelRegex();
+    
+    [GeneratedRegex(@"(?:\b)(\w)(\w+)")]
+    private static partial Regex CamelPascalRegex();
+
+    [GeneratedRegex(@"(:?[\W_])(\w)")]
+    private static partial Regex SnakePascalRegex();
 }

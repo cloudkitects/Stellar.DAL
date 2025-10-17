@@ -94,7 +94,7 @@ public static class Extensions
 
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
+            return ValueConverter.Parse<T>($"{dataRecord.GetValue(0)}");
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -122,7 +122,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse($"{value}", propertyInfo.PropertyType);
+                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
 
                         try
                         {
@@ -146,7 +146,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse($"{value}", fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
 
                         try
                         {
@@ -166,7 +166,7 @@ public static class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
+            : ValueConverter.Parse<T>($"{dataRecord.GetValue(0)}");
     }
 
     /// <summary>Gets and caches a type's properties and fields.</summary>
@@ -221,7 +221,7 @@ public static class Extensions
         // Handle mapping to primitives and strings when there is only a single field in the record
         if (fieldCount == 1 && (type.IsPrimitive || type == typeof(string)))
         {
-            return ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
+            return ValueConverter.Parse<T>($"{dataRecord.GetValue(0)}");
         }
 
         var obj = type.GetDefaultValue() ?? Activator.CreateInstance<T>();
@@ -252,7 +252,7 @@ public static class Extensions
                         var value = dataRecord.GetValue(i);
 
                         // TODO: 
-                        var convertedValue = ValueConverter.Parse($"{value}", propertyInfo.PropertyType);
+                        var convertedValue = ValueConverter.Parse(value, propertyInfo.PropertyType);
 
                         try
                         {
@@ -276,7 +276,7 @@ public static class Extensions
 
                         var value = dataRecord.GetValue(i);
 
-                        var convertedValue = ValueConverter.Parse($"{value}", fieldInfo.FieldType);
+                        var convertedValue = ValueConverter.Parse(value, fieldInfo.FieldType);
 
                         try
                         {
@@ -296,7 +296,7 @@ public static class Extensions
 
         return mapped || fieldCount != 1
             ? (T)obj!
-            : ValueConverter.Parse<T>(dataRecord.GetValue(0).ToString()!);
+            : ValueConverter.Parse<T>($"{dataRecord.GetValue(0)}");
     }
 
 }

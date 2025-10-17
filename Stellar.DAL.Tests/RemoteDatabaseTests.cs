@@ -8,6 +8,18 @@ public class RemoteDatabaseTests(RemoteDatabaseFixture fixture)
     readonly RemoteDatabaseFixture database = fixture;
 
     [Fact]
+    public void Connects()
+    {
+        var client = new AzureDatabaseClient(database.ConnectionString);
+
+        var command = client
+            .GetCommand()
+            .SetCommandText("SELECT 1;");
+
+        Assert.Equal(1, command.ExecuteScalar());
+    }
+
+    [Fact]
     public void GetsCommand()
     {
         Assert.NotNull(database.GetCommand());
